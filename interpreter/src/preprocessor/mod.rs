@@ -13,10 +13,7 @@ mod tests;
 ///
 /// Returns a tuple containing a vector of stations and the assignment table, which
 /// store the index of every assign station and its corresponding assign value
-pub fn process<'a>(
-    src: &str,
-    ns: &Namespace,
-) -> Result<(Vec<Station>, usize, HashMap<usize, Pallet>), Error> {
+pub fn process<'a>(src: &str) -> Result<(Vec<Station>, usize, HashMap<usize, Pallet>), Error> {
     // generating 2d vector layout of source code
     let mut char_map: Vec<Vec<char>> = Vec::new();
     let mut n_chars = 0;
@@ -31,7 +28,7 @@ pub fn process<'a>(
 
     // station discovery
     debug!(3, "Discovering stations");
-    let (mut stations, assign_table) = station_parser::parse_stations(&char_map, ns)?;
+    let (mut stations, assign_table) = station_parser::parse_stations(&char_map)?;
     debug!(3, "Found {} stations", stations.len());
 
     // getting start station's index

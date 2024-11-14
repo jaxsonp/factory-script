@@ -35,7 +35,6 @@ fn get_next_char(pos: &mut SourcePos, char_map: &Vec<Vec<char>>) -> Option<char>
 /// discovered, and the assign table
 pub fn parse_stations(
     char_map: &Vec<Vec<char>>,
-    ns: &Namespace,
 ) -> Result<(Vec<Station>, HashMap<usize, Pallet>), Error> {
     let mut stations: Vec<Station> = Vec::new();
     let mut assign_table: HashMap<usize, Pallet> = HashMap::new();
@@ -96,7 +95,6 @@ pub fn parse_stations(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, cur_token.len() + 2),
                         StationModifiers::default(),
-                        ns,
                     )?;
                     debug!(
                         3,
@@ -135,7 +133,6 @@ pub fn parse_stations(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
                         *mods,
-                        ns,
                     )?;
                     debug!(
                         3,
@@ -164,7 +161,6 @@ pub fn parse_stations(
                         "assign",
                         SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1),
                         StationModifiers::default(),
-                        ns,
                     )?;
                     // parsing literal type
                     let assignment_value = parse_assign_literal(&cur_token, new_station.loc)?;

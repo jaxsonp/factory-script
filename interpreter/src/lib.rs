@@ -12,13 +12,11 @@ pub mod runtime;
 use error::{Error, ErrorType::*};
 use fs_core::{stations::STATION_TYPES, *};
 
-pub type Namespace = Vec<&'static StationType>;
-
 pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     let start_time = Instant::now();
 
     debug!(2, "Preprocessing...");
-    let (mut stations, start_i, assign_table) = preprocessor::process(src, &STATION_TYPES)?;
+    let (mut stations, start_i, assign_table) = preprocessor::process(src)?;
     let runtime_start_time = Instant::now();
     debug!(2, "Starting");
     let step_count = runtime::execute(&mut stations, start_i, &assign_table)?;
@@ -66,9 +64,8 @@ impl Station {
         identifier: &str,
         loc: SourceSpan,
         modifiers: StationModifiers,
-        ns: &Namespace,
     ) -> Result<Self, Error> {
-        for station_type in ns {
+        for station_type in STATION_TYPES.iter() {
             if station_type.has_id(identifier) {
                 return Ok(Self {
                     loc,
@@ -243,7 +240,6 @@ mod tests {
             "joint",
             SourcePos::zero().spanning(0),
             StationModifiers::default(),
-            &STATION_TYPES,
         )
         .unwrap();
         station.in_bays.push(Some(Pallet::Empty));

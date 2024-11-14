@@ -60,17 +60,13 @@ pub struct Station {
     pub out_bays: Vec<(usize, usize)>,
 }
 impl Station {
-    pub fn new(
-        identifier: &str,
-        loc: SourceSpan,
-        modifiers: StationModifiers,
-    ) -> Result<Self, Error> {
+    pub fn new(identifier: &str, loc: SourceSpan) -> Result<Self, Error> {
         for station_type in STATION_TYPES.iter() {
             if station_type.has_id(identifier) {
                 return Ok(Self {
                     loc,
                     logic: station_type,
-                    modifiers,
+                    modifiers: StationModifiers::default(),
                     in_bays: Vec::new(),
                     out_bays: Vec::new(),
                 });
@@ -236,12 +232,7 @@ mod tests {
 
     #[test]
     fn test_station_clear_in_bays() {
-        let mut station = Station::new(
-            "joint",
-            SourcePos::zero().spanning(0),
-            StationModifiers::default(),
-        )
-        .unwrap();
+        let mut station = Station::new("joint", SourcePos::zero().spanning(0)).unwrap();
         station.in_bays.push(Some(Pallet::Empty));
         station.in_bays.push(Some(Pallet::Int(3)));
         station.in_bays.push(Some(Pallet::Char('a')));

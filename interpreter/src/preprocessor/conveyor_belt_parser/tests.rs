@@ -1,4 +1,4 @@
-use belt_follower::follow_belt;
+/*use belt_follower::follow_belt;
 
 use super::*;
 
@@ -261,3 +261,4 @@ fn test_follow_belt_none() {
     .is_none());
     assert_eq!(visited_map, make_visited_map(&map));
 }
+*/

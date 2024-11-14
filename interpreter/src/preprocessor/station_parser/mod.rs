@@ -94,7 +94,6 @@ pub fn parse_stations(
                     let new_station = Station::new(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, cur_token.len() + 2),
-                        StationModifiers::default(),
                     )?;
                     debug!(
                         3,
@@ -129,11 +128,11 @@ pub fn parse_stations(
                 '*' => state = State::StationModifiers(mods.reverse()),
                 ']' => {
                     debug!(4, "   - station end @ {}", pos);
-                    let new_station = Station::new(
+                    let mut new_station = Station::new(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
-                        *mods,
                     )?;
+                    new_station.modifiers = *mods;
                     debug!(
                         3,
                         " - #{} {} @ {}",
@@ -160,7 +159,6 @@ pub fn parse_stations(
                     let new_station = Station::new(
                         "assign",
                         SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1),
-                        StationModifiers::default(),
                     )?;
                     // parsing literal type
                     let assignment_value = parse_assign_literal(&cur_token, new_station.loc)?;

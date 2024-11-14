@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 mod literal_parser;
 
 use crate::*;
@@ -33,11 +31,8 @@ fn get_next_char(pos: &mut SourcePos, char_map: &Vec<Vec<char>>) -> Option<char>
 
 /// Identifies stations using a finite state machine. Returns a vector of stations
 /// discovered, and the assign table
-pub fn parse_stations(
-    char_map: &Vec<Vec<char>>,
-) -> Result<(Vec<Station>, HashMap<usize, Pallet>), Error> {
+pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> {
     let mut stations: Vec<Station> = Vec::new();
-    let mut assign_table: HashMap<usize, Pallet> = HashMap::new();
 
     let mut pos = SourcePos::zero();
     // getting first character
@@ -156,21 +151,18 @@ pub fn parse_stations(
                 '}' => {
                     debug!(4, "   - station end @ {}", pos);
                     // creating new station
-                    let new_station = Station::new(
-                        "assign",
-                        SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1),
-                    )?;
+                    let loc = SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1);
+                    let assign_val = parse_assign_literal(&cur_token, loc)?;
+                    let new_station = Station::new_assign(assign_val.clone(), loc);
                     // parsing literal type
-                    let assignment_value = parse_assign_literal(&cur_token, new_station.loc)?;
                     debug!(
                         3,
                         " - #{} {} @ {} ({})",
                         stations.len(),
                         new_station.logic.id,
                         new_station.loc,
-                        assignment_value
+                        assign_val
                     );
-                    assign_table.insert(stations.len(), assignment_value);
                     stations.push(new_station);
                     state = State::Default;
                 }
@@ -207,7 +199,7 @@ pub fn parse_stations(
     }
     match state {
         State::Default => {
-            return Ok((stations, assign_table));
+            return Ok(stations);
         }
         _ => return Err(Error::new(SyntaxError, cur_station_pos, "Unexpected EOF")),
     }

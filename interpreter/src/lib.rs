@@ -16,10 +16,10 @@ pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     let start_time = Instant::now();
 
     debug!(2, "Preprocessing...");
-    let (mut stations, start_i, assign_table) = preprocessor::process(src)?;
+    let (mut stations, start_i) = preprocessor::process(src)?;
     let runtime_start_time = Instant::now();
     debug!(2, "Starting");
-    let step_count = runtime::execute(&mut stations, start_i, &assign_table)?;
+    let step_count = runtime::execute(&mut stations, start_i)?;
 
     if print_benchmark {
         let end_time = Instant::now();
@@ -58,6 +58,8 @@ pub struct Station {
     pub in_bays: Vec<Option<Pallet>>,
     /// Map of each output bay connection in the form (station_index, in_bay_index)
     pub out_bays: Vec<(usize, usize)>,
+    /// Data the station may need
+    pub data: StationData,
 }
 impl Station {
     pub fn new(identifier: &str, loc: SourceSpan) -> Result<Self, Error> {
@@ -69,6 +71,7 @@ impl Station {
                     modifiers: StationModifiers::default(),
                     in_bays: Vec::new(),
                     out_bays: Vec::new(),
+                    data: StationData::None,
                 });
             }
         }
@@ -79,6 +82,17 @@ impl Station {
         ));
     }
 
+    pub fn new_assign(val: Pallet, loc: SourceSpan) -> Self {
+        return Self {
+            loc,
+            logic: &fs_core::stations::control::ASSIGN,
+            modifiers: StationModifiers::default(),
+            in_bays: Vec::new(),
+            out_bays: Vec::new(),
+            data: StationData::AssignValue(val),
+        };
+    }
+
     pub fn clear_in_bays(&mut self) {
         for bay in self.in_bays.iter_mut() {
             if bay.is_some() {
@@ -86,6 +100,12 @@ impl Station {
             }
         }
     }
+}
+
+#[derive(Debug)]
+pub enum StationData {
+    AssignValue(Pallet),
+    None,
 }
 
 /// Struct for holding the modifiers of an instance of a station

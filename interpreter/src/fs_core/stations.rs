@@ -1,9 +1,9 @@
 use crate::*;
 use lazy_static::lazy_static;
 
-mod control;
-mod io;
-mod math;
+pub mod control;
+pub mod io;
+pub mod math;
 
 lazy_static! {
     pub static ref STATION_TYPES: Vec<&'static StationType> = vec![

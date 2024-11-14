@@ -5,11 +5,7 @@ use crate::*;
 
 /// Spawns pallets from the start station and starts the execution loop, returns
 /// the number of steps in the program
-pub fn execute(
-    stations: &mut Vec<Station>,
-    start_i: usize,
-    assign_table: &HashMap<usize, Pallet>,
-) -> Result<usize, Error> {
+pub fn execute(stations: &mut Vec<Station>, start_i: usize) -> Result<usize, Error> {
     // Vector of all pallets to move in the next step, tuple with the pallet and
     // the destination index and bay number
     let mut moving_pallets: Vec<(Pallet, (usize, usize))> = Vec::new();
@@ -48,7 +44,7 @@ pub fn execute(
                 // handling special case stations
                 if station.logic.id == "assign" {
                     // special case: assign station
-                    if let Some(p) = assign_table.get(&i) {
+                    if let StationData::AssignValue(p) = &station.data {
                         debug!(4, "    - Produced: {}", p);
                         for out_bay in station.out_bays.iter() {
                             moving_pallets.push((p.clone(), *out_bay));

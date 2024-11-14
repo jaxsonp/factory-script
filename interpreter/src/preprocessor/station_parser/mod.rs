@@ -94,7 +94,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {}",
                         stations.len(),
-                        new_station.logic.id,
+                        new_station.s_type.id,
                         new_station.loc
                     );
                     stations.push(new_station);
@@ -132,7 +132,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {}",
                         stations.len(),
-                        new_station.logic.id,
+                        new_station.s_type.id,
                         new_station.loc
                     );
                     stations.push(new_station);
@@ -159,7 +159,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {} ({})",
                         stations.len(),
-                        new_station.logic.id,
+                        new_station.s_type.id,
                         new_station.loc,
                         assign_val
                     );

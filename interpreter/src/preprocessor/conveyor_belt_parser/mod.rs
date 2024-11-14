@@ -16,7 +16,7 @@ pub fn parse_conveyor_belts(
     }
     debug!(2, "Parsing conveyor belts");
     for i in 0..stations.len() {
-        debug!(3, " - #{i} {}", stations[i].logic.id);
+        debug!(3, " - #{i} {}", stations[i].s_type.id);
         // get neighbors
         let neighbors = get_neighbors(char_map, &stations[i]);
         for neighbor in neighbors {

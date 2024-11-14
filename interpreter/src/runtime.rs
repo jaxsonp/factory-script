@@ -1,5 +1,4 @@
 use fs_core::Pallet;
-use std::collections::HashMap;
 
 use crate::*;
 
@@ -38,11 +37,11 @@ pub fn execute(stations: &mut Vec<Station>, start_i: usize) -> Result<usize, Err
                     occupied_bays += 1;
                 }
             }
-            if occupied_bays >= station.logic.inputs && station.logic.inputs > 0 {
+            if occupied_bays >= station.s_type.inputs && station.s_type.inputs > 0 {
                 // running procedures
-                debug!(3, " - Procedure triggered on #{i} ({})", station.logic.id);
+                debug!(3, " - Procedure triggered on #{i} ({})", station.s_type.id);
                 // handling special case stations
-                if station.logic.id == "assign" {
+                if station.s_type.id == "assign" {
                     // special case: assign station
                     if let StationData::AssignValue(p) = &station.data {
                         debug!(4, "    - Produced: {}", p);
@@ -53,12 +52,12 @@ pub fn execute(stations: &mut Vec<Station>, start_i: usize) -> Result<usize, Err
                         return Err(Error::new(
                             RuntimeError,
                             station.loc,
-                            format!("Can't find assign table entry for #{i}"),
+                            format!("Can't find assign value for #{i}"),
                         ));
                     };
                     station.clear_in_bays();
                     continue;
-                } else if station.logic.id == "joint" {
+                } else if station.s_type.id == "joint" {
                     // special case: joint station
                     for in_bay in station.in_bays.iter() {
                         if let Some(p) = in_bay {
@@ -71,17 +70,17 @@ pub fn execute(stations: &mut Vec<Station>, start_i: usize) -> Result<usize, Err
                     }
                     station.clear_in_bays();
                     continue;
-                } else if station.logic.id == "exit" {
+                } else if station.s_type.id == "exit" {
                     // special case: exit
                     debug!(2, "No remaining moving pallets");
                     break 'execution_loop;
                 }
 
                 // executing general procedures
-                let procedure = station.logic.procedure;
+                let procedure = station.s_type.procedure;
                 match procedure(&station.in_bays) {
                     Ok(Some(p)) => {
-                        if !station.logic.output {
+                        if !station.s_type.output {
                             return Err(Error::new(
                                 RuntimeError,
                                 station.loc,
@@ -94,9 +93,9 @@ pub fn execute(stations: &mut Vec<Station>, start_i: usize) -> Result<usize, Err
                         }
                     }
                     Ok(None) => {
-                        if station.logic.output
-                            && station.logic.id != "gate"
-                            && station.logic.id != "filter"
+                        if station.s_type.output
+                            && station.s_type.id != "gate"
+                            && station.s_type.id != "filter"
                         {
                             return Err(Error::new(
                                 RuntimeError,

@@ -31,7 +31,7 @@ pub fn process<'a>(src: &str) -> Result<(Vec<Station>, usize), Error> {
     let mut start_i: usize = 0;
     let mut found_start = false;
     for i in 0..stations.len() {
-        if stations[i].logic.id == "start" {
+        if stations[i].s_type.id == "start" {
             if found_start {
                 return Err(Error::new(
                     SyntaxError,

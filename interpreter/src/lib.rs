@@ -50,9 +50,9 @@ pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
 pub struct Station {
     /// Location of the station in source code
     pub loc: SourceSpan,
-    /// Station functionality and type information
-    pub logic: &'static StationType,
-    /// Modifiers duh
+    /// Station type information
+    pub s_type: &'static StationType,
+    /// Modifiers
     pub modifiers: StationModifiers,
     /// Queues for each input bay
     pub in_bays: Vec<Option<Pallet>>,
@@ -67,7 +67,7 @@ impl Station {
             if station_type.has_id(identifier) {
                 return Ok(Self {
                     loc,
-                    logic: station_type,
+                    s_type: station_type,
                     modifiers: StationModifiers::default(),
                     in_bays: Vec::new(),
                     out_bays: Vec::new(),
@@ -85,7 +85,7 @@ impl Station {
     pub fn new_assign(val: Pallet, loc: SourceSpan) -> Self {
         return Self {
             loc,
-            logic: &fs_core::stations::control::ASSIGN,
+            s_type: &fs_core::stations::control::ASSIGN,
             modifiers: StationModifiers::default(),
             in_bays: Vec::new(),
             out_bays: Vec::new(),

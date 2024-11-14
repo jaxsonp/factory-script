@@ -26,11 +26,11 @@ fn test_get_next_char() {
 fn test_parse_stations() {
     let char_map = make_char_map("[start] [print]\n  [exit]");
     let (stations, _) = parse_stations(&char_map, &STATION_TYPES).unwrap();
-    assert_eq!(stations[0].logic.id, "start");
+    assert_eq!(stations[0].s_type.id, "start");
     assert_eq!(stations[0].loc, SourceSpan::new(SourcePos::zero(), 7));
-    assert_eq!(stations[1].logic.id, "print");
+    assert_eq!(stations[1].s_type.id, "print");
     assert_eq!(stations[1].loc, SourceSpan::new(SourcePos::new(0, 8), 7));
-    assert_eq!(stations[2].logic.id, "exit");
+    assert_eq!(stations[2].s_type.id, "exit");
     assert_eq!(stations[2].loc, SourceSpan::new(SourcePos::new(1, 2), 6));
 }
 
@@ -44,11 +44,11 @@ fn test_parse_stations_incomplete() {
 fn test_parse_stations_assign() {
     let char_map = make_char_map("[start] {} [exit]");
     let (stations, _) = parse_stations(&char_map, &STATION_TYPES).unwrap();
-    assert_eq!(stations[0].logic.id, "start");
+    assert_eq!(stations[0].s_type.id, "start");
     assert_eq!(stations[0].loc, SourceSpan::new(SourcePos::zero(), 7));
-    assert_eq!(stations[1].logic.id, "assign");
+    assert_eq!(stations[1].s_type.id, "assign");
     assert_eq!(stations[1].loc, SourceSpan::new(SourcePos::new(0, 8), 2));
-    assert_eq!(stations[2].logic.id, "exit");
+    assert_eq!(stations[2].s_type.id, "exit");
     assert_eq!(stations[2].loc, SourceSpan::new(SourcePos::new(0, 11), 6));
 }
 
@@ -56,11 +56,11 @@ fn test_parse_stations_assign() {
 fn test_parse_stations_joint() {
     let char_map = make_char_map("[start] [] [exit]");
     let (stations, _) = parse_stations(&char_map, &STATION_TYPES).unwrap();
-    assert_eq!(stations[0].logic.id, "start");
+    assert_eq!(stations[0].s_type.id, "start");
     assert_eq!(stations[0].loc, SourceSpan::new(SourcePos::zero(), 7));
-    assert_eq!(stations[1].logic.id, "joint");
+    assert_eq!(stations[1].s_type.id, "joint");
     assert_eq!(stations[1].loc, SourceSpan::new(SourcePos::new(0, 8), 2));
-    assert_eq!(stations[2].logic.id, "exit");
+    assert_eq!(stations[2].s_type.id, "exit");
     assert_eq!(stations[2].loc, SourceSpan::new(SourcePos::new(0, 11), 6));
 }
 

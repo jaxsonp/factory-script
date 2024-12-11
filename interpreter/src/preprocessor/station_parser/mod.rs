@@ -1,7 +1,6 @@
 mod literal_parser;
 
-use crate::*;
-use core::*;
+use crate::{station::*, util::*, *};
 use literal_parser::parse_assign_literal;
 
 #[cfg(test)]
@@ -94,7 +93,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {}",
                         stations.len(),
-                        new_station.s_type.id,
+                        new_station.s_type,
                         new_station.loc
                     );
                     stations.push(new_station);
@@ -132,7 +131,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {}",
                         stations.len(),
-                        new_station.s_type.id,
+                        new_station.s_type,
                         new_station.loc
                     );
                     stations.push(new_station);
@@ -159,7 +158,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                         3,
                         " - #{} {} @ {} ({})",
                         stations.len(),
-                        new_station.s_type.id,
+                        new_station.s_type,
                         new_station.loc,
                         assign_val
                     );

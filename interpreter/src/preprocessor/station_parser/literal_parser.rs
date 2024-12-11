@@ -1,5 +1,4 @@
-use crate::*;
-use core::*;
+use crate::{util::SourceSpan, *};
 
 pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error> {
     match s.as_str() {
@@ -15,8 +14,8 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
             // boolean false
             return Ok(Pallet::Bool(false));
         }
-        "pi" => return Ok(constants::PI.clone()),
-        "e" => return Ok(constants::E.clone()),
+        "pi" => return Ok(pallet::constants::PI.clone()),
+        "e" => return Ok(pallet::constants::E.clone()),
         _ => {}
     }
 

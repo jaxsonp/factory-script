@@ -1,9 +1,7 @@
-use crate::*;
-
 mod belt_follower;
 
-#[cfg(test)]
-mod tests;
+use super::*;
+use crate::{station::*, *};
 
 /// Parses conveyor belts in the character map and connecting the stations accordingly
 pub fn parse_conveyor_belts(
@@ -16,7 +14,7 @@ pub fn parse_conveyor_belts(
     }
     debug!(2, "Parsing conveyor belts");
     for i in 0..stations.len() {
-        debug!(3, " - #{i} {}", stations[i].s_type.id);
+        debug!(3, " - #{i} {}", stations[i].s_type);
         // get neighbors
         let neighbors = get_neighbors(char_map, &stations[i]);
         for neighbor in neighbors {

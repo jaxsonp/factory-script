@@ -1,4 +1,6 @@
-use crate::*;
+use std::cmp::min;
+
+use crate::util::SourceSpan;
 
 /// Custom error handling struct
 #[derive(Debug)]

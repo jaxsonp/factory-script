@@ -1,7 +1,5 @@
 use clap::Parser;
-use std::fs::File;
-use std::io::prelude::*;
-use std::process::ExitCode;
+use std::{cmp::min, fs::File, io::prelude::*, process::ExitCode};
 
 use interpreter::*;
 
@@ -10,7 +8,7 @@ fn main() -> ExitCode {
 
     // setting global options
     unsafe {
-        DEBUG_LEVEL = cli.debug_level;
+        DEBUG_LEVEL = min(cli.debug_level, 4);
         COLOR_OUTPUT = !cli.no_color;
         debug!(1, "Debug level:\t{}", DEBUG_LEVEL);
     }
@@ -19,7 +17,7 @@ fn main() -> ExitCode {
     let file_name: String = match cli.file {
         Some(s) => s,
         None => {
-            print_err!("No file provided");
+            print_cli_err!("No file provided");
             return ExitCode::FAILURE;
         }
     };
@@ -27,7 +25,7 @@ fn main() -> ExitCode {
     let mut file = match File::open(&file_name) {
         Ok(f) => f,
         Err(e) => {
-            print_err!("Failed to open file \"{}\": {}", file_name, e);
+            print_cli_err!("Failed to open file \"{}\": {}", file_name, e);
             return ExitCode::FAILURE;
         }
     };
@@ -36,7 +34,7 @@ fn main() -> ExitCode {
     let bytes_read = match file.read_to_string(&mut file_contents) {
         Ok(b) => b,
         Err(e) => {
-            print_err!("Failed to read file \"{}\": {}", file_name, e);
+            print_cli_err!("Failed to read file \"{}\": {}", file_name, e);
             return ExitCode::FAILURE;
         }
     };
@@ -49,7 +47,7 @@ fn main() -> ExitCode {
     match run(&file_contents, cli.benchmark) {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            print_err!("{}", e.pretty_msg(&file_contents));
+            print_cli_err!("{}", e.pretty_msg(&file_contents));
             ExitCode::FAILURE
         }
     }

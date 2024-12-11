@@ -1,157 +1,161 @@
-use super::list_pallets;
-use crate::*;
+use super::*;
 
-pub static EQUALS: StationType = StationType {
+pub static EQUALS: BuiltinStationType = BuiltinStationType {
     id: "eq",
     alt_id: Some("="),
     inputs: 2,
     output: true,
     procedure: equals_procedure,
 };
-fn equals_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn equals_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Bool(pallets[0] == pallets[1])));
 }
 
-pub static NOT_EQUALS: StationType = StationType {
+pub static NOT_EQUALS: BuiltinStationType = BuiltinStationType {
     id: "ne",
     alt_id: Some("!="),
     inputs: 2,
     output: true,
     procedure: not_equals_procedure,
 };
-fn not_equals_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn not_equals_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Bool(pallets[0] != pallets[1])));
 }
 
-pub static GREATER_THAN: StationType = StationType {
+pub static GREATER_THAN: BuiltinStationType = BuiltinStationType {
     id: "gt",
     alt_id: Some(">"),
     inputs: 2,
     output: true,
     procedure: greater_than_procedure,
 };
-fn greater_than_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn greater_than_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Bool(num1 > num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Bool(num1 > num2)));
         }
-        (Some(Pallet::Bool(bool1)), Some(Pallet::Bool(bool2))) => {
+        (Pallet::Bool(bool1), Pallet::Bool(bool2)) => {
             return Ok(Some(Pallet::Bool(bool1 > bool2)));
         }
         _ => {
             return Err(format!(
-                "Expected numerical or boolean pallets, received: {}\n",
+                "Expected matching numerical or boolean pallets, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static LESS_THAN: StationType = StationType {
+pub static LESS_THAN: BuiltinStationType = BuiltinStationType {
     id: "lt",
     alt_id: Some("<"),
     inputs: 2,
     output: true,
     procedure: less_than_procedure,
 };
-fn less_than_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn less_than_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Bool(num1 < num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Bool(num1 < num2)));
         }
-        (Some(Pallet::Bool(bool1)), Some(Pallet::Bool(bool2))) => {
+        (Pallet::Bool(bool1), Pallet::Bool(bool2)) => {
             return Ok(Some(Pallet::Bool(bool1 < bool2)));
         }
         _ => {
             return Err(format!(
-                "Expected numerical or boolean pallets, received: {}\n",
+                "Expected matching numerical or boolean pallets, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static GREATER_THAN_EQUAL: StationType = StationType {
+pub static GREATER_THAN_EQUAL: BuiltinStationType = BuiltinStationType {
     id: "gte",
     alt_id: Some(">="),
     inputs: 2,
     output: true,
     procedure: greater_than_equal_procedure,
 };
-fn greater_than_equal_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn greater_than_equal_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Bool(num1 >= num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Bool(num1 >= num2)));
         }
-        (Some(Pallet::Bool(bool1)), Some(Pallet::Bool(bool2))) => {
+        (Pallet::Bool(bool1), Pallet::Bool(bool2)) => {
             return Ok(Some(Pallet::Bool(bool1 >= bool2)));
         }
         _ => {
             return Err(format!(
-                "Expected numerical or boolean pallets, received: {}\n",
+                "Expected matching numerical or boolean pallets, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static LESS_THAN_EQUAL: StationType = StationType {
+pub static LESS_THAN_EQUAL: BuiltinStationType = BuiltinStationType {
     id: "lte",
     alt_id: Some("<="),
     inputs: 2,
     output: true,
     procedure: less_than_equal_procedure,
 };
-fn less_than_equal_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn less_than_equal_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Bool(num1 <= num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Bool(num1 <= num2)));
         }
-        (Some(Pallet::Bool(bool1)), Some(Pallet::Bool(bool2))) => {
+        (Pallet::Bool(bool1), Pallet::Bool(bool2)) => {
             return Ok(Some(Pallet::Bool(bool1 <= bool2)));
         }
         _ => {
             return Err(format!(
-                "Expected numerical or boolean pallets, received: {}\n",
+                "Expected matching numerical or boolean pallets, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static ADD: StationType = StationType {
+pub static ADD: BuiltinStationType = BuiltinStationType {
     id: "add",
     alt_id: Some("+"),
     inputs: 2,
     output: true,
     procedure: add_procedure,
 };
-fn add_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn add_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Int(num1 + num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Float(num1 + num2)));
         }
-        (Some(Pallet::String(string)), Some(Pallet::Char(char))) => {
+        (Pallet::String(string), Pallet::Char(char)) => {
             let mut s = string.to_owned();
             s.push(*char);
             return Ok(Some(Pallet::String(s)));
         }
-        (Some(Pallet::String(string1)), Some(Pallet::String(string2))) => {
+        (Pallet::String(string1), Pallet::String(string2)) => {
             return Ok(Some(Pallet::String(string1.to_owned() + string2.as_str())));
         }
         _ => {
@@ -163,19 +167,20 @@ fn add_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String
     }
 }
 
-pub static SUBTRACT: StationType = StationType {
+pub static SUBTRACT: BuiltinStationType = BuiltinStationType {
     id: "sub",
     alt_id: Some("-"),
     inputs: 2,
     output: true,
     procedure: subtract_procedure,
 };
-fn subtract_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn subtract_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Int(num1 - num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Float(num1 - num2)));
         }
         _ => {
@@ -187,19 +192,20 @@ fn subtract_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, S
     }
 }
 
-pub static MULTIPLY: StationType = StationType {
+pub static MULTIPLY: BuiltinStationType = BuiltinStationType {
     id: "mult",
     alt_id: Some("*"),
     inputs: 2,
     output: true,
     procedure: multiply_procedure,
 };
-fn multiply_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn multiply_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             return Ok(Some(Pallet::Int(num1 * num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             return Ok(Some(Pallet::Float(num1 * num2)));
         }
         _ => {
@@ -211,22 +217,23 @@ fn multiply_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, S
     }
 }
 
-pub static DIVIDE: StationType = StationType {
+pub static DIVIDE: BuiltinStationType = BuiltinStationType {
     id: "div",
     alt_id: Some("/"),
     inputs: 2,
     output: true,
     procedure: divide_procedure,
 };
-fn divide_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn divide_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             if *num2 == 0 {
                 return Err(String::from("Attempted divide by zero"));
             }
             return Ok(Some(Pallet::Int(num1 / num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             if *num2 == 0.0 {
                 return Err(String::from("Attempted divide by zero"));
             }
@@ -241,22 +248,23 @@ fn divide_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, Str
     }
 }
 
-pub static MODULO: StationType = StationType {
+pub static MODULO: BuiltinStationType = BuiltinStationType {
     id: "mod",
     alt_id: Some("%"),
     inputs: 2,
     output: true,
     procedure: modulo_procedure,
 };
-fn modulo_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn modulo_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Int(num1)), Some(Pallet::Int(num2))) => {
+        (Pallet::Int(num1), Pallet::Int(num2)) => {
             if *num2 == 0 {
                 return Err(String::from("Attempted divide by zero"));
             }
             return Ok(Some(Pallet::Int(num1 % num2)));
         }
-        (Some(Pallet::Float(num1)), Some(Pallet::Float(num2))) => {
+        (Pallet::Float(num1), Pallet::Float(num2)) => {
             if *num2 == 0.0 {
                 return Err(String::from("Attempted divide by zero"));
             }
@@ -271,64 +279,67 @@ fn modulo_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, Str
     }
 }
 
-pub static INCREMENT: StationType = StationType {
+pub static INCREMENT: BuiltinStationType = BuiltinStationType {
     id: "inc",
     alt_id: Some("++"),
     inputs: 1,
     output: true,
     procedure: increment_procedure,
 };
-fn increment_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn increment_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
-        Some(Pallet::Int(num)) => {
+        Pallet::Int(num) => {
             return Ok(Some(Pallet::Int(num + 1)));
         }
-        Some(Pallet::Float(num)) => {
+        Pallet::Float(num) => {
             return Ok(Some(Pallet::Float(num + 1.0)));
         }
         _ => {
             return Err(format!(
-                "Expected one numerical pallet, received: {}\n",
+                "Expected a numerical pallet, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static DECREMENT: StationType = StationType {
+pub static DECREMENT: BuiltinStationType = BuiltinStationType {
     id: "dec",
     alt_id: Some("--"),
     inputs: 1,
     output: true,
     procedure: decrement_procedure,
 };
-fn decrement_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn decrement_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
-        Some(Pallet::Int(num)) => {
+        Pallet::Int(num) => {
             return Ok(Some(Pallet::Int(num - 1)));
         }
-        Some(Pallet::Float(num)) => {
+        Pallet::Float(num) => {
             return Ok(Some(Pallet::Float(num - 1.0)));
         }
         _ => {
             return Err(format!(
-                "Expected one numerical pallet, received: {}\n",
+                "Expected a numerical pallet, received: {}\n",
                 list_pallets(pallets)
             ));
         }
     }
 }
 
-pub static AND: StationType = StationType {
+pub static AND: BuiltinStationType = BuiltinStationType {
     id: "and",
     alt_id: None,
     inputs: 2,
     output: true,
     procedure: and_procedure,
 };
-fn and_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn and_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Bool(b1)), Some(Pallet::Bool(b2))) => Ok(Some(Pallet::Bool(*b1 && *b2))),
+        (Pallet::Bool(b1), Pallet::Bool(b2)) => Ok(Some(Pallet::Bool(*b1 && *b2))),
         _ => {
             return Err(format!(
                 "Expected two boolean pallets, received {}\n",
@@ -338,16 +349,17 @@ fn and_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String
     }
 }
 
-pub static OR: StationType = StationType {
+pub static OR: BuiltinStationType = BuiltinStationType {
     id: "or",
     alt_id: None,
     inputs: 2,
     output: true,
     procedure: or_procedure,
 };
-fn or_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn or_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Bool(b1)), Some(Pallet::Bool(b2))) => Ok(Some(Pallet::Bool(*b1 || *b2))),
+        (Pallet::Bool(b1), Pallet::Bool(b2)) => Ok(Some(Pallet::Bool(*b1 || *b2))),
         _ => {
             return Err(format!(
                 "Expected two boolean pallets, received {}\n",
@@ -357,19 +369,20 @@ fn or_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String>
     }
 }
 
-pub static NOT: StationType = StationType {
+pub static NOT: BuiltinStationType = BuiltinStationType {
     id: "not",
     alt_id: Some("!"),
     inputs: 1,
     output: true,
     procedure: not_procedure,
 };
-fn not_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn not_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
-        Some(Pallet::Bool(b1)) => Ok(Some(Pallet::Bool(!(*b1)))),
+        Pallet::Bool(b1) => Ok(Some(Pallet::Bool(!(*b1)))),
         _ => {
             return Err(format!(
-                "Expected two boolean pallets, received {}\n",
+                "Expected a boolean pallet, received {}\n",
                 list_pallets(pallets)
             ));
         }

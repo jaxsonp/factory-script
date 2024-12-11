@@ -8,9 +8,11 @@
   - Add preprocessor check for invalid modifiers
   - man and max consts for number pallets
 - Global constants (for long strings etc)
+- Program arguments
 - Functions
 - Standard lib
   - File io
   - to_string
   - iterators
+- Maybe convert station parser from FSM to recursive descent parser?
 - FS Editor

@@ -1,17 +1,17 @@
 use super::*;
 
-pub static START: BuiltinStationType = BuiltinStationType {
-    id: "start",
+pub static MAIN: StationType = StationType {
+    id: "main",
     alt_id: None,
     inputs: 0,
     output: true,
-    procedure: start_procedure,
+    procedure: main_procedure,
 };
-fn start_procedure(_: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn main_procedure(_: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Empty));
 }
 
-pub static EXIT: BuiltinStationType = BuiltinStationType {
+pub static EXIT: StationType = StationType {
     id: "exit",
     alt_id: None,
     inputs: 1,
@@ -19,7 +19,7 @@ pub static EXIT: BuiltinStationType = BuiltinStationType {
     procedure: none_procedure,
 };
 
-pub static JOINT: BuiltinStationType = BuiltinStationType {
+pub static JOINT: StationType = StationType {
     id: "joint",
     alt_id: Some(""),
     inputs: 1,
@@ -27,7 +27,7 @@ pub static JOINT: BuiltinStationType = BuiltinStationType {
     procedure: none_procedure,
 };
 
-pub static ASSIGN: BuiltinStationType = BuiltinStationType {
+pub static ASSIGN: StationType = StationType {
     id: "assign",
     alt_id: None,
     inputs: 1,
@@ -35,7 +35,7 @@ pub static ASSIGN: BuiltinStationType = BuiltinStationType {
     procedure: none_procedure,
 };
 
-pub static GATE: BuiltinStationType = BuiltinStationType {
+pub static GATE: StationType = StationType {
     id: "gate",
     alt_id: None,
     inputs: 2,
@@ -57,7 +57,7 @@ fn gate_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static FILTER: BuiltinStationType = BuiltinStationType {
+pub static FILTER: StationType = StationType {
     id: "filter",
     alt_id: Some("X"),
     inputs: 1,

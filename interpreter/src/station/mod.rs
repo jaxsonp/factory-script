@@ -4,7 +4,7 @@ pub mod types;
 pub use modifiers::StationModifiers;
 
 use crate::{util::*, Pallet, *};
-use types::{builtin::BUILTIN_STATION_TYPES, StationType};
+use types::{StationType, STATION_TYPES};
 
 /// Instance of a station
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct Station {
     /// Location of the station in source code
     pub loc: SourceSpan,
     /// Station type information
-    pub s_type: StationType,
+    pub s_type: &'static StationType,
     /// Data the station may need
     pub data: StationData,
     /// Modifiers
@@ -23,12 +23,12 @@ pub struct Station {
     pub out_bays: Vec<(usize, usize)>,
 }
 impl Station {
-    pub fn new(identifier: &str, loc: SourceSpan) -> Result<Self, Error> {
-        for station_type in BUILTIN_STATION_TYPES.iter() {
+    pub fn from_str(identifier: &str, loc: SourceSpan) -> Result<Self, Error> {
+        for station_type in STATION_TYPES.iter() {
             if station_type.has_id(identifier) {
                 return Ok(Self {
                     loc,
-                    s_type: StationType::Builtin(station_type),
+                    s_type: *station_type,
                     modifiers: StationModifiers::default(),
                     in_bays: Vec::new(),
                     out_bays: Vec::new(),
@@ -43,17 +43,6 @@ impl Station {
         ));
     }
 
-    pub fn new_assign(val: Pallet, loc: SourceSpan) -> Self {
-        return Self {
-            loc,
-            s_type: StationType::Builtin(&types::builtin::ASSIGN),
-            modifiers: StationModifiers::default(),
-            in_bays: Vec::new(),
-            out_bays: Vec::new(),
-            data: StationData::AssignValue(val),
-        };
-    }
-
     pub fn clear_in_bays(&mut self) {
         for bay in self.in_bays.iter_mut() {
             if bay.is_some() {
@@ -66,5 +55,7 @@ impl Station {
 #[derive(Debug)]
 pub enum StationData {
     AssignValue(Pallet),
+    FunctionID(usize),
+    FunctionIDAndIndex(usize, usize),
     None,
 }

@@ -43,7 +43,6 @@ pub fn follow_belt(
         }
     }
 
-    debug!(4, "      probing starting at {}", pos);
     loop {
         if BELT_CHARS.contains(c) {
             visited.push(pos);
@@ -86,7 +85,6 @@ pub fn follow_belt(
                 "Dangling belt, expected station out bay",
             ));
         }
-        debug!(4, "       - moved to {}, now facing {}", pos, facing);
 
         // moving to the next char
         match facing {
@@ -117,7 +115,6 @@ pub fn follow_belt(
         }
         // if the last character was a double belt, we reached the origin
         if DOUBLE_BELT_CHARS.contains(c) {
-            debug!(4, "       - path ended at {}", pos);
             for pos in visited {
                 visited_map[pos.line][pos.col] = true;
             }

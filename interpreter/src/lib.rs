@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 pub mod error;
+pub mod function;
 pub mod pallet;
 pub mod station;
 pub mod util;
@@ -14,6 +15,8 @@ pub use pallet::Pallet;
 mod preprocessor;
 mod runtime;
 
+use function::FunctionTemplate;
+
 pub static mut COLOR_OUTPUT: bool = false;
 pub static mut DEBUG_LEVEL: u8 = 0;
 
@@ -21,12 +24,12 @@ pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     let start_time = Instant::now();
 
     debug!(2, "Preprocessing...");
-    let mut stations = preprocessor::process(src)?;
+    let (/*mut _main, mut _function_templates*/) = preprocessor::process(src)?;
 
     let runtime_start_time = Instant::now();
     debug!(2, "Starting");
     let mut step_count: u64 = 0;
-    runtime::execute(&mut stations, &mut step_count)?;
+    //runtime::execute(&mut stations, &mut step_count)?;
 
     if print_benchmark {
         let end_time = Instant::now();

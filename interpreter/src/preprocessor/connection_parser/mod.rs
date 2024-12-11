@@ -1,13 +1,10 @@
 mod belt_follower;
 
 use super::*;
-use crate::{station::*, *};
+use crate::{function::FunctionTemplate, station::*, *};
 
 /// Parses conveyor belts in the character map and connecting the stations accordingly
-pub fn parse_conveyor_belts(
-    char_map: &Vec<Vec<char>>,
-    stations: &mut Vec<Station>,
-) -> Result<(), Error> {
+pub fn parse(char_map: &Vec<Vec<char>>, stations: &mut Vec<Station>) -> Result<(), Error> {
     let mut visited_map: Vec<Vec<bool>> = Vec::new();
     for line in char_map {
         visited_map.push(line.iter().map(|_| false).collect());

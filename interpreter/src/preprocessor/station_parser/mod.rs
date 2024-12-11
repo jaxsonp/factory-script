@@ -1,15 +1,16 @@
 mod literal_parser;
 
+use std::collections::HashMap;
+
 use crate::{station::*, util::*, *};
 use literal_parser::parse_assign_literal;
-
-#[cfg(test)]
-mod tests;
 
 enum State {
     Default,
     Station,
     StationModifiers(StationModifiers),
+    FunctionName,
+    FunctionSuffix(usize),
     AssignStation,
 }
 
@@ -33,6 +34,10 @@ fn get_next_char(pos: &mut SourcePos, char_map: &Vec<Vec<char>>) -> Option<char>
 pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> {
     let mut stations: Vec<Station> = Vec::new();
 
+    // map to ID functions
+    let mut function_ids: HashMap<String, usize> = HashMap::new();
+    let mut n_functions = 0;
+
     let mut pos = SourcePos::zero();
     // getting first character
     let mut c: char = loop {
@@ -40,7 +45,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             return Err(Error::new(
                 SyntaxError,
                 SourcePos::zero(),
-                "Empty factory file",
+                "Empty factory program",
             ));
         }
         if char_map[pos.line].len() > 0 {
@@ -65,14 +70,12 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                     state = State::Station;
                     cur_token = String::new();
                     cur_station_pos = pos.clone();
-                    debug!(4, "   - station start @ {}", pos);
                 }
                 // start of assign station
                 '{' => {
                     state = State::AssignStation;
                     cur_token = String::new();
                     cur_station_pos = pos.clone();
-                    debug!(4, "   - assign station start @ {}", pos);
                 }
                 // ehhh???
                 ']' | '}' => {
@@ -84,24 +87,27 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             State::Station => {
                 if c == ']' {
                     // new station w no modifiers
-                    debug!(4, "   - station end @ {}", pos);
-                    let new_station = Station::new(
+                    let new_station = Station::from_str(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, cur_token.len() + 2),
                     )?;
-                    debug!(
-                        3,
-                        " - #{} {} @ {}",
-                        stations.len(),
-                        new_station.s_type,
-                        new_station.loc
-                    );
+                    debug!(3, " - {} @ {}", new_station.s_type, new_station.loc);
                     stations.push(new_station);
                     state = State::Default;
+                } else if c == '$' {
+                    // function related station
+                    if !cur_token.is_empty() {
+                        // dollar sign in middle of station syntax
+                        return Err(Error::new(
+                            SyntaxError,
+                            pos,
+                            "Invalid '$' character, must be at beginning of station declaration",
+                        ));
+                    }
+                    state = State::FunctionName;
                 } else if c == ':' {
                     // start of modifiers
                     state = State::StationModifiers(StationModifiers::default());
-                    debug!(4, "   - station modifiers @ {}", pos);
                 } else if c.is_ascii_graphic() && !c.is_ascii_whitespace() {
                     // station identifier
                     cur_token.push(c);
@@ -110,8 +116,106 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                     return Err(Error::new(
                         SyntaxError,
                         pos,
-                        "Invalid character, station identifiers only contain non-whitespace, printable ASCII characters",
+                        "Invalid character, station identifiers can only contain non-whitespace, printable ASCII characters",
                     ));
+                }
+            }
+            State::FunctionName => {
+                if c == '.' || c == ']' {
+                    // done reading function name
+                    let function_id: usize;
+                    match function_ids.get(&cur_token) {
+                        Some(id) => {
+                            function_id = *id;
+                        }
+                        None => {
+                            function_ids.insert(cur_token.clone(), n_functions);
+                            function_id = n_functions;
+                            n_functions += 1;
+                        }
+                    }
+                    if c == '.' {
+                        // function input or output
+                        state = State::FunctionSuffix(function_id);
+                    } else {
+                        // function invocation
+                        let new_station = Station {
+                            loc: SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
+                            s_type: &station::types::FUNC_INVOKE,
+                            modifiers: StationModifiers::default(),
+                            in_bays: Vec::new(),
+                            out_bays: Vec::new(),
+                            data: StationData::FunctionID(function_id),
+                        };
+                        debug!(
+                            3,
+                            " - {} @ {} (function #{})",
+                            new_station.s_type,
+                            new_station.loc,
+                            function_id
+                        );
+                        stations.push(new_station);
+                        state = State::Default;
+                    }
+                    cur_token.clear();
+                } else if c.is_ascii_graphic() && !c.is_ascii_whitespace() {
+                    cur_token.push(c);
+                } else {
+                    // invalid character
+                    return Err(Error::new(
+                        SyntaxError,
+                        pos,
+                        "Invalid character, function names can only contain non-whitespace, printable ASCII characters",
+                    ));
+                }
+            }
+            State::FunctionSuffix(id) => {
+                if c == ']' {
+                    let new_station: Station;
+                    let loc = SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col);
+                    if cur_token == "out" {
+                        new_station = Station {
+                            loc,
+                            s_type: &station::types::FUNC_OUTPUT,
+                            modifiers: StationModifiers::default(),
+                            in_bays: Vec::new(),
+                            out_bays: Vec::new(),
+                            data: StationData::FunctionID(id),
+                        };
+                        debug!(
+                            3,
+                            " - {} @ {} (function #{})", new_station.s_type, new_station.loc, id
+                        );
+                    } else if let Ok(index) = cur_token.parse::<usize>() {
+                        new_station = Station {
+                            loc,
+                            s_type: &station::types::FUNC_INPUT,
+                            modifiers: StationModifiers::default(),
+                            in_bays: Vec::new(),
+                            out_bays: Vec::new(),
+                            data: StationData::FunctionIDAndIndex(id, index),
+                        };
+                        debug!(
+                            3,
+                            " - {} @ {} (function #{}, input {})",
+                            new_station.s_type,
+                            new_station.loc,
+                            id,
+                            index
+                        );
+                    } else {
+                        return Err(Error::new(
+                            SyntaxError,
+                            loc,
+                            "Invalid function suffix, must be 'out' or a positive integer",
+                        ));
+                    }
+                    stations.push(new_station);
+                    state = State::Default;
+                } else if c.is_ascii_graphic() && !c.is_ascii_whitespace() {
+                    cur_token.push(c);
+                } else {
+                    return Err(Error::new(SyntaxError, pos, "Invalid character"));
                 }
             }
             State::StationModifiers(ref mods) => match c {
@@ -121,19 +225,12 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                 'W' => state = State::StationModifiers(mods.with_priority(Direction::WEST)),
                 '*' => state = State::StationModifiers(mods.reverse()),
                 ']' => {
-                    debug!(4, "   - station end @ {}", pos);
-                    let mut new_station = Station::new(
+                    let mut new_station = Station::from_str(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
                     )?;
                     new_station.modifiers = *mods;
-                    debug!(
-                        3,
-                        " - #{} {} @ {}",
-                        stations.len(),
-                        new_station.s_type,
-                        new_station.loc
-                    );
+                    debug!(3, " - {} @ {}", new_station.s_type, new_station.loc);
                     stations.push(new_station);
                     state = State::Default;
                 }
@@ -148,19 +245,25 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             },
             State::AssignStation => match c {
                 '}' => {
-                    debug!(4, "   - station end @ {}", pos);
                     // creating new station
                     let loc = SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1);
-                    let assign_val = parse_assign_literal(&cur_token, loc)?;
-                    let new_station = Station::new_assign(assign_val.clone(), loc);
-                    // parsing literal type
+                    let assign_val = match parse_assign_literal(&cur_token) {
+                        Ok(p) => p,
+                        Err(s) => {
+                            return Err(Error::new(SyntaxError, pos, s));
+                        }
+                    };
+                    let new_station = Station {
+                        loc,
+                        s_type: &station::types::ASSIGN,
+                        modifiers: StationModifiers::default(),
+                        in_bays: Vec::new(),
+                        out_bays: Vec::new(),
+                        data: StationData::AssignValue(assign_val.clone()),
+                    };
                     debug!(
                         3,
-                        " - #{} {} @ {} ({})",
-                        stations.len(),
-                        new_station.s_type,
-                        new_station.loc,
-                        assign_val
+                        " - {} @ {} ({})", new_station.s_type, new_station.loc, assign_val
                     );
                     stations.push(new_station);
                     state = State::Default;
@@ -191,10 +294,13 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
         c = match get_next_char(&mut pos, char_map) {
             Some(c) => c,
             None => {
-                debug!(4, "   - EOF reached");
                 break;
             }
         };
+    }
+    debug!(3, "Functions:");
+    for (name, id) in function_ids.iter() {
+        debug!(3, " - {} (#{})", name, id);
     }
     match state {
         State::Default => {

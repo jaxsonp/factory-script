@@ -1,9 +1,6 @@
-use super::none_procedure;
-use crate::*;
+use super::*;
 
-// dummy station types used for parsing functions
-
-pub static FUNC_INVOKE: BuiltinBuiltinStationType = BuiltinBuiltinStationType {
+pub static FUNC_INVOKE: StationType = StationType {
     id: "func_invoke",
     alt_id: None,
     inputs: 0,
@@ -11,7 +8,7 @@ pub static FUNC_INVOKE: BuiltinBuiltinStationType = BuiltinBuiltinStationType {
     procedure: none_procedure,
 };
 
-pub static FUNC_INPUT: BuiltinBuiltinStationType = BuiltinBuiltinStationType {
+pub static FUNC_INPUT: StationType = StationType {
     id: "func_input",
     alt_id: None,
     inputs: 0,
@@ -19,8 +16,8 @@ pub static FUNC_INPUT: BuiltinBuiltinStationType = BuiltinBuiltinStationType {
     procedure: none_procedure,
 };
 
-pub static FUNC_OUTPUT: BuiltinBuiltinStationType = BuiltinBuiltinStationType {
-    id: "func_ouput",
+pub static FUNC_OUTPUT: StationType = StationType {
+    id: "func_output",
     alt_id: None,
     inputs: 0,
     output: true,

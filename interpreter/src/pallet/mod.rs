@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub mod constants;
 
 /// Instance of a pallet
@@ -10,8 +12,8 @@ pub enum Pallet {
     Int(i64),
     Float(f64),
 }
-impl std::fmt::Display for Pallet {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Pallet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",

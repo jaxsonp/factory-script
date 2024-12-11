@@ -2,7 +2,7 @@ use std::io::{stdin, stdout, Write};
 
 use super::*;
 
-pub static PRINT: BuiltinStationType = BuiltinStationType {
+pub static PRINT: StationType = StationType {
     id: "print",
     alt_id: None,
     inputs: 1,
@@ -36,7 +36,7 @@ fn print_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(None);
 }
 
-pub static PRINTLN: BuiltinStationType = BuiltinStationType {
+pub static PRINTLN: StationType = StationType {
     id: "println",
     alt_id: None,
     inputs: 1,
@@ -49,7 +49,7 @@ fn println_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(None);
 }
 
-pub static READLN: BuiltinStationType = BuiltinStationType {
+pub static READLN: StationType = StationType {
     id: "readln",
     alt_id: None,
     inputs: 1,

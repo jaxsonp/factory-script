@@ -1,6 +1,6 @@
 use super::*;
 
-pub static EQUALS: BuiltinStationType = BuiltinStationType {
+pub static EQUALS: StationType = StationType {
     id: "eq",
     alt_id: Some("="),
     inputs: 2,
@@ -11,7 +11,7 @@ fn equals_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Bool(pallets[0] == pallets[1])));
 }
 
-pub static NOT_EQUALS: BuiltinStationType = BuiltinStationType {
+pub static NOT_EQUALS: StationType = StationType {
     id: "ne",
     alt_id: Some("!="),
     inputs: 2,
@@ -22,7 +22,7 @@ fn not_equals_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String>
     return Ok(Some(Pallet::Bool(pallets[0] != pallets[1])));
 }
 
-pub static GREATER_THAN: BuiltinStationType = BuiltinStationType {
+pub static GREATER_THAN: StationType = StationType {
     id: "gt",
     alt_id: Some(">"),
     inputs: 2,
@@ -50,7 +50,7 @@ fn greater_than_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, Strin
     }
 }
 
-pub static LESS_THAN: BuiltinStationType = BuiltinStationType {
+pub static LESS_THAN: StationType = StationType {
     id: "lt",
     alt_id: Some("<"),
     inputs: 2,
@@ -78,7 +78,7 @@ fn less_than_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> 
     }
 }
 
-pub static GREATER_THAN_EQUAL: BuiltinStationType = BuiltinStationType {
+pub static GREATER_THAN_EQUAL: StationType = StationType {
     id: "gte",
     alt_id: Some(">="),
     inputs: 2,
@@ -106,7 +106,7 @@ fn greater_than_equal_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>,
     }
 }
 
-pub static LESS_THAN_EQUAL: BuiltinStationType = BuiltinStationType {
+pub static LESS_THAN_EQUAL: StationType = StationType {
     id: "lte",
     alt_id: Some("<="),
     inputs: 2,
@@ -134,7 +134,7 @@ fn less_than_equal_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, St
     }
 }
 
-pub static ADD: BuiltinStationType = BuiltinStationType {
+pub static ADD: StationType = StationType {
     id: "add",
     alt_id: Some("+"),
     inputs: 2,
@@ -167,7 +167,7 @@ fn add_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static SUBTRACT: BuiltinStationType = BuiltinStationType {
+pub static SUBTRACT: StationType = StationType {
     id: "sub",
     alt_id: Some("-"),
     inputs: 2,
@@ -192,7 +192,7 @@ fn subtract_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static MULTIPLY: BuiltinStationType = BuiltinStationType {
+pub static MULTIPLY: StationType = StationType {
     id: "mult",
     alt_id: Some("*"),
     inputs: 2,
@@ -217,7 +217,7 @@ fn multiply_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static DIVIDE: BuiltinStationType = BuiltinStationType {
+pub static DIVIDE: StationType = StationType {
     id: "div",
     alt_id: Some("/"),
     inputs: 2,
@@ -248,7 +248,7 @@ fn divide_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static MODULO: BuiltinStationType = BuiltinStationType {
+pub static MODULO: StationType = StationType {
     id: "mod",
     alt_id: Some("%"),
     inputs: 2,
@@ -279,7 +279,7 @@ fn modulo_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static INCREMENT: BuiltinStationType = BuiltinStationType {
+pub static INCREMENT: StationType = StationType {
     id: "inc",
     alt_id: Some("++"),
     inputs: 1,
@@ -304,7 +304,7 @@ fn increment_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> 
     }
 }
 
-pub static DECREMENT: BuiltinStationType = BuiltinStationType {
+pub static DECREMENT: StationType = StationType {
     id: "dec",
     alt_id: Some("--"),
     inputs: 1,
@@ -329,7 +329,7 @@ fn decrement_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> 
     }
 }
 
-pub static AND: BuiltinStationType = BuiltinStationType {
+pub static AND: StationType = StationType {
     id: "and",
     alt_id: None,
     inputs: 2,
@@ -349,7 +349,7 @@ fn and_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static OR: BuiltinStationType = BuiltinStationType {
+pub static OR: StationType = StationType {
     id: "or",
     alt_id: None,
     inputs: 2,
@@ -369,7 +369,7 @@ fn or_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
     }
 }
 
-pub static NOT: BuiltinStationType = BuiltinStationType {
+pub static NOT: StationType = StationType {
     id: "not",
     alt_id: Some("!"),
     inputs: 1,

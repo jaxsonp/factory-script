@@ -19,7 +19,7 @@ pub static FUNC_INPUT: StationType = StationType {
 pub static FUNC_OUTPUT: StationType = StationType {
     id: "func_output",
     alt_id: None,
-    inputs: 0,
+    inputs: 1,
     output: true,
     procedure: none_procedure,
 };

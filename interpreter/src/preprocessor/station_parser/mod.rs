@@ -1,7 +1,5 @@
 mod literal_parser;
 
-use std::collections::HashMap;
-
 use crate::{station::*, util::*, *};
 use literal_parser::parse_assign_literal;
 
@@ -31,12 +29,45 @@ fn get_next_char(pos: &mut SourcePos, char_map: &Vec<Vec<char>>) -> Option<char>
 
 /// Identifies stations using a finite state machine. Returns a vector of stations
 /// discovered, and the assign table
-pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> {
+pub fn parse_stations(
+    char_map: &Vec<Vec<char>>,
+) -> Result<(Vec<Station>, Vec<FunctionTemplate>), Error> {
     let mut stations: Vec<Station> = Vec::new();
+    let mut functions: Vec<FunctionTemplate> = Vec::new();
 
-    // map to ID functions
-    let mut function_ids: HashMap<String, usize> = HashMap::new();
-    let mut n_functions = 0;
+    // main function is always #0
+    functions.push(FunctionTemplate::new("main".to_string()));
+
+    let mut push_station = |s: Station| {
+        debug!(
+            4,
+            "   - {} @ {} {}",
+            s.s_type,
+            s.loc,
+            if s.s_type == &types::ASSIGN {
+                if let StationData::AssignValue(val) = &s.data {
+                    format!("({})", val)
+                } else {
+                    panic!();
+                }
+            } else if s.s_type == &types::FUNC_INVOKE || s.s_type == &types::FUNC_OUTPUT {
+                if let StationData::FunctionID(id) = &s.data {
+                    format!("(function {})", id)
+                } else {
+                    panic!();
+                }
+            } else if s.s_type == &types::FUNC_INPUT {
+                if let StationData::FunctionIDAndIndex(id, index) = &s.data {
+                    format!("(function {}, arg #{})", id, index)
+                } else {
+                    panic!();
+                }
+            } else {
+                "".to_string()
+            }
+        );
+        stations.push(s);
+    };
 
     let mut pos = SourcePos::zero();
     // getting first character
@@ -61,6 +92,7 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
     let mut cur_token = String::new();
     let mut cur_station_pos = SourcePos::zero();
 
+    debug!(4, "  Stations:");
     loop {
         // incrementing the state machine
         match state {
@@ -87,12 +119,10 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             State::Station => {
                 if c == ']' {
                     // new station w no modifiers
-                    let new_station = Station::from_str(
+                    push_station(Station::from_str(
                         cur_token.as_str(),
                         SourceSpan::new(cur_station_pos, cur_token.len() + 2),
-                    )?;
-                    debug!(3, " - {} @ {}", new_station.s_type, new_station.loc);
-                    stations.push(new_station);
+                    )?);
                     state = State::Default;
                 } else if c == '$' {
                     // function related station
@@ -122,39 +152,39 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             }
             State::FunctionName => {
                 if c == '.' || c == ']' {
-                    // done reading function name
-                    let function_id: usize;
-                    match function_ids.get(&cur_token) {
-                        Some(id) => {
-                            function_id = *id;
-                        }
-                        None => {
-                            function_ids.insert(cur_token.clone(), n_functions);
-                            function_id = n_functions;
-                            n_functions += 1;
+                    // done reading function name, getting id
+                    if cur_token == "main" {
+                        return Err(Error::new(
+                            SyntaxError,
+                            SourceSpan::new(cur_station_pos, cur_token.len() + 2),
+                            "'main' is a reserved function name",
+                        ));
+                    }
+                    let mut function_id: usize = usize::MAX;
+                    for (i, f) in functions.iter().enumerate() {
+                        if f.name == cur_token {
+                            function_id = i;
+                            break;
                         }
                     }
+                    if function_id == usize::MAX {
+                        // couldn't find function
+                        function_id = functions.len();
+                        functions.push(FunctionTemplate::new(cur_token.clone()));
+                    }
+
                     if c == '.' {
                         // function input or output
                         state = State::FunctionSuffix(function_id);
                     } else {
                         // function invocation
-                        let new_station = Station {
-                            loc: SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
-                            s_type: &station::types::FUNC_INVOKE,
-                            modifiers: StationModifiers::default(),
-                            in_bays: Vec::new(),
-                            out_bays: Vec::new(),
-                            data: StationData::FunctionID(function_id),
-                        };
-                        debug!(
-                            3,
-                            " - {} @ {} (function #{})",
-                            new_station.s_type,
-                            new_station.loc,
-                            function_id
+                        push_station(
+                            Station::new(
+                                SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1),
+                                &station::types::FUNC_INVOKE,
+                            )
+                            .with_data(StationData::FunctionID(function_id)),
                         );
-                        stations.push(new_station);
                         state = State::Default;
                     }
                     cur_token.clear();
@@ -171,37 +201,16 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             }
             State::FunctionSuffix(id) => {
                 if c == ']' {
-                    let new_station: Station;
-                    let loc = SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col);
+                    let loc = SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col + 1);
                     if cur_token == "out" {
-                        new_station = Station {
-                            loc,
-                            s_type: &station::types::FUNC_OUTPUT,
-                            modifiers: StationModifiers::default(),
-                            in_bays: Vec::new(),
-                            out_bays: Vec::new(),
-                            data: StationData::FunctionID(id),
-                        };
-                        debug!(
-                            3,
-                            " - {} @ {} (function #{})", new_station.s_type, new_station.loc, id
+                        push_station(
+                            Station::new(loc, &station::types::FUNC_OUTPUT)
+                                .with_data(StationData::FunctionID(id)),
                         );
                     } else if let Ok(index) = cur_token.parse::<usize>() {
-                        new_station = Station {
-                            loc,
-                            s_type: &station::types::FUNC_INPUT,
-                            modifiers: StationModifiers::default(),
-                            in_bays: Vec::new(),
-                            out_bays: Vec::new(),
-                            data: StationData::FunctionIDAndIndex(id, index),
-                        };
-                        debug!(
-                            3,
-                            " - {} @ {} (function #{}, input {})",
-                            new_station.s_type,
-                            new_station.loc,
-                            id,
-                            index
+                        push_station(
+                            Station::new(loc, &station::types::FUNC_INPUT)
+                                .with_data(StationData::FunctionIDAndIndex(id, index)),
                         );
                     } else {
                         return Err(Error::new(
@@ -210,7 +219,6 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                             "Invalid function suffix, must be 'out' or a positive integer",
                         ));
                     }
-                    stations.push(new_station);
                     state = State::Default;
                 } else if c.is_ascii_graphic() && !c.is_ascii_whitespace() {
                     cur_token.push(c);
@@ -225,13 +233,13 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                 'W' => state = State::StationModifiers(mods.with_priority(Direction::WEST)),
                 '*' => state = State::StationModifiers(mods.reverse()),
                 ']' => {
-                    let mut new_station = Station::from_str(
-                        cur_token.as_str(),
-                        SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
-                    )?;
-                    new_station.modifiers = *mods;
-                    debug!(3, " - {} @ {}", new_station.s_type, new_station.loc);
-                    stations.push(new_station);
+                    push_station(
+                        Station::from_str(
+                            cur_token.as_str(),
+                            SourceSpan::new(cur_station_pos, pos.col - cur_station_pos.col),
+                        )?
+                        .with_modifiers(*mods),
+                    );
                     state = State::Default;
                 }
                 _ => {
@@ -253,19 +261,10 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
                             return Err(Error::new(SyntaxError, pos, s));
                         }
                     };
-                    let new_station = Station {
-                        loc,
-                        s_type: &station::types::ASSIGN,
-                        modifiers: StationModifiers::default(),
-                        in_bays: Vec::new(),
-                        out_bays: Vec::new(),
-                        data: StationData::AssignValue(assign_val.clone()),
-                    };
-                    debug!(
-                        3,
-                        " - {} @ {} ({})", new_station.s_type, new_station.loc, assign_val
+                    push_station(
+                        Station::new(loc, &station::types::ASSIGN)
+                            .with_data(StationData::AssignValue(assign_val.clone())),
                     );
-                    stations.push(new_station);
                     state = State::Default;
                 }
                 '\\' => {
@@ -298,13 +297,13 @@ pub fn parse_stations(char_map: &Vec<Vec<char>>) -> Result<Vec<Station>, Error> 
             }
         };
     }
-    debug!(3, "Functions:");
-    for (name, id) in function_ids.iter() {
-        debug!(3, " - {} (#{})", name, id);
+    debug!(4, "  Functions:");
+    for (i, f) in functions.iter().enumerate() {
+        debug!(4, "   - {i} {}", f.name);
     }
     match state {
         State::Default => {
-            return Ok(stations);
+            return Ok((stations, functions));
         }
         _ => return Err(Error::new(SyntaxError, cur_station_pos, "Unexpected EOF")),
     }

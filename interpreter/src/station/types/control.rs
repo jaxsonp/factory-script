@@ -7,7 +7,7 @@ pub static MAIN: StationType = StationType {
     output: true,
     procedure: main_procedure,
 };
-fn main_procedure(_: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn main_procedure(_: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Empty));
 }
 
@@ -24,8 +24,12 @@ pub static JOINT: StationType = StationType {
     alt_id: Some(""),
     inputs: 1,
     output: true,
-    procedure: none_procedure,
+    procedure: joint_procedure,
 };
+fn joint_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
+    return Ok(Some(pallets[0].clone()));
+}
 
 pub static ASSIGN: StationType = StationType {
     id: "assign",
@@ -42,7 +46,7 @@ pub static GATE: StationType = StationType {
     output: true,
     procedure: gate_procedure,
 };
-fn gate_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn gate_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
         (Pallet::Bool(b), pallet) | (pallet, Pallet::Bool(b)) => {
@@ -51,7 +55,7 @@ fn gate_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
         _ => {
             return Err(format!(
                 "Expected at least one boolean pallet, received {}\n",
-                list_pallets(pallets)
+                list_pallets(&pallets)
             ));
         }
     }
@@ -64,8 +68,8 @@ pub static FILTER: StationType = StationType {
     output: true,
     procedure: filter_procedure,
 };
-fn filter_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
-    debug_assert!(pallets.len() >= 2, "Invalid argument count");
+fn filter_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
         Pallet::Bool(false) => Ok(None),
         p => Ok(Some((*p).clone())),

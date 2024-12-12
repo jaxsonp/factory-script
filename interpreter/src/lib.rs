@@ -6,17 +6,17 @@ pub mod pallet;
 pub mod station;
 pub mod util;
 
+mod preprocessor;
+mod runtime;
+
 pub use error::{
     Error,
     ErrorType::{self, *},
 };
+use function::FunctionTemplate;
 pub use pallet::Pallet;
 
-mod preprocessor;
-mod runtime;
-
-use function::FunctionTemplate;
-
+pub static MAX_RECURSION_DEPTH: u32 = 1000;
 pub static mut COLOR_OUTPUT: bool = false;
 pub static mut DEBUG_LEVEL: u8 = 0;
 
@@ -24,12 +24,16 @@ pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     let start_time = Instant::now();
 
     debug!(2, "Preprocessing...");
-    let (/*mut _main, mut _function_templates*/) = preprocessor::process(src)?;
+    let mut program = preprocessor::process(src)?;
+
+    program.benchmark = print_benchmark;
 
     let runtime_start_time = Instant::now();
     debug!(2, "Starting");
-    let mut step_count: u64 = 0;
-    //runtime::execute(&mut stations, &mut step_count)?;
+    let (res, step_count) = runtime::execute(&program);
+    if res.is_err() {
+        return res;
+    }
 
     if print_benchmark {
         let end_time = Instant::now();
@@ -53,4 +57,11 @@ pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+/// Represents the output of the preprocessor/input to the runtime module
+pub struct FSProgram {
+    main: FunctionTemplate,
+    function_templates: Vec<FunctionTemplate>,
+    benchmark: bool,
 }

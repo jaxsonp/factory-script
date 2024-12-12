@@ -1,5 +1,6 @@
 # TODO
 
+- Standardize debug levels <<<<<
 - QOL
   - Add shorthand IDs for and and or
   - Crossing conveyor belts
@@ -7,9 +8,13 @@
   - Add preprocessor check for correct outputs
   - Add preprocessor check for invalid modifiers
   - man and max consts for number pallets
+- Under the hood QOL
+  - refactor static mut program options
+  - make assign station not a special case (might not be possible)
 - Global constants (for long strings etc)
-- Program arguments
+- Program arguments and return value
 - Functions
+  - Update docs
 - Standard lib
   - File io
   - to_string

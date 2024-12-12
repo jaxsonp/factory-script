@@ -9,7 +9,7 @@ pub static PRINT: StationType = StationType {
     output: false,
     procedure: print_procedure,
 };
-fn print_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn print_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
         Pallet::Empty => {}
@@ -43,7 +43,7 @@ pub static PRINTLN: StationType = StationType {
     output: false,
     procedure: println_procedure,
 };
-fn println_procedure(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn println_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     print_procedure(pallets)?;
     println!();
     return Ok(None);
@@ -56,7 +56,7 @@ pub static READLN: StationType = StationType {
     output: true,
     procedure: readln_procedure,
 };
-fn readln_procedure(_: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+fn readln_procedure(_: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     let mut input = String::new();
     let _ = stdout().flush();
     match stdin().read_line(&mut input) {

@@ -26,7 +26,7 @@ pub struct StationType {
     pub output: bool,
     /// Station's procedure, takes a vector of input pallets and returns an optional
     /// pallet if successful, and an error message in a String if not
-    pub procedure: fn(pallets: Vec<&Pallet>) -> Result<Option<Pallet>, String>,
+    pub procedure: fn(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String>,
 }
 impl StationType {
     /// Function to check whether a station has a certain ID
@@ -71,13 +71,13 @@ lazy_static! {
     ];
 }
 
-/// Common procedure that returns nothign
-pub fn none_procedure(_: Vec<&Pallet>) -> Result<Option<Pallet>, String> {
+/// Dummy procedure that does nothing
+pub fn none_procedure(_: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(None);
 }
 
 /// helper function to generate a string listing pallets, used for error messages
-fn list_pallets(pallets: Vec<&Pallet>) -> String {
+fn list_pallets(pallets: &Vec<Pallet>) -> String {
     let mut output = String::from("(");
     for i in 0..pallets.len() {
         output.push_str(format!("{}", pallets[i]).as_str());

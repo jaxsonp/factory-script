@@ -1,48 +1,115 @@
 mod belt_follower;
 
-use super::*;
-use crate::{function::FunctionTemplate, station::*, *};
+use std::collections::HashMap;
 
-/// Parses conveyor belts in the character map and connecting the stations accordingly
-pub fn parse(char_map: &Vec<Vec<char>>, stations: &mut Vec<Station>) -> Result<(), Error> {
-    let mut visited_map: Vec<Vec<bool>> = Vec::new();
-    for line in char_map {
-        visited_map.push(line.iter().map(|_| false).collect());
-    }
-    debug!(2, "Parsing conveyor belts");
-    for i in 0..stations.len() {
-        debug!(3, " - #{i} {}", stations[i].s_type);
-        // get neighbors
-        let neighbors = get_neighbors(char_map, &stations[i]);
-        for neighbor in neighbors {
-            // check if neighbors originate from a station
-            if let Some(origin_pos) =
-                belt_follower::follow_belt(char_map, &mut visited_map, neighbor)?
-            {
-                if let Some(origin_i) = get_station_at(stations, origin_pos) {
-                    debug!(3, "   - bay {} from #{origin_i}", stations[i].in_bays.len());
-                    let in_bay_index = stations[i].in_bays.len();
-                    stations[i].in_bays.push(None);
-                    stations[origin_i].out_bays.push((i, in_bay_index));
-                } else {
-                    return Err(Error::new(
-                        SyntaxError,
-                        origin_pos,
-                        "Expected station at start of conveyor belt",
-                    ));
-                }
-            };
+use belt_follower::follow_belt;
+
+use super::*;
+use crate::{
+    station::{self, StationData},
+    *,
+};
+
+/// Parses conveyor belts in the character map, connects the stations, and moves them into their function templates
+pub fn parse(
+    char_map: &Vec<Vec<char>>,
+    stations: Vec<Station>,
+    functions: &mut Vec<FunctionTemplate>,
+) -> Result<(), Error> {
+    let mut stations = stations;
+    // hashmap to keep track of which stations have been visited, and by what function id
+    let mut visited_stations: HashMap<usize, usize> = HashMap::with_capacity(stations.len());
+
+    // getting all station indices that are an entry point for a function and which function they belong to
+    let mut entry_stations: Vec<(usize, usize)> = Vec::new();
+    for (i, station) in stations.iter().enumerate() {
+        if station.s_type == &station::types::MAIN {
+            entry_stations.push((i, 0));
+        } else if station.s_type == &station::types::FUNC_INPUT {
+            if let StationData::FunctionIDAndIndex(id, _) = station.data {
+                entry_stations.push((i, id));
+            } else {
+                panic!();
+            }
         }
     }
 
-    for line in 0..char_map.len() {
-        for col in 0..char_map[line].len() {
-            if BELT_CHARS.contains(char_map[line][col]) && !visited_map[line][col] {
-                return Err(Error::new(
-                    SyntaxError,
-                    SourcePos::new(line, col),
-                    "Unattached conveyor belt",
-                ));
+    // Performing DFS starting at every entry station
+    debug!(2, "Parsing connections");
+    for (entry_index, cur_function_id) in entry_stations {
+        let mut to_visit: Vec<usize> = Vec::new();
+        to_visit.push(entry_index);
+
+        while !to_visit.is_empty() {
+            let i = to_visit.pop().unwrap();
+            if visited_stations.contains_key(&i) {
+                // station has been visited already
+                if *visited_stations.get(&i).unwrap() != cur_function_id {
+                    return Err(Error::new(
+                        SyntaxError,
+                        stations[i].loc,
+                        format!(
+                            "Station cannot belong to multiple function templates, found in functions '{}' and '{}",
+                            functions[*visited_stations.get(&i).unwrap()].name,
+                            functions[cur_function_id].name
+                        ),
+                    ));
+                }
+                continue;
+            }
+            // marking this station as being visited by this function
+            visited_stations.insert(i, cur_function_id);
+
+            //println!(" at {i}");
+            let neighbors = get_neighbors(char_map, &stations[i]);
+            for neighbor in neighbors {
+                let (dest, priority) = match follow_belt(char_map, &stations, neighbor)? {
+                    Some(res) => res,
+                    None => {
+                        // neighbor position isn't a conveyor belt
+                        continue;
+                    }
+                };
+                if stations[dest].s_type == &station::types::FUNC_OUTPUT {
+                    if let StationData::FunctionID(id) = stations[dest].data {
+                        if id != cur_function_id {
+                            return Err(Error::new(
+                                SyntaxError,
+                                stations[dest].loc,
+                                format!(
+                                    "Found output for function '{}' when evaluating function '{}'",
+                                    functions[id].name, functions[cur_function_id].name
+                                ),
+                            ));
+                        }
+                    }
+                }
+                stations[i].out_bays.push((dest, priority));
+                //println!("   goes to {dest}");
+                to_visit.push(dest);
+            }
+        }
+    }
+
+    // used to map old global indices of stations to function-local indices
+    let mut index_mappings: HashMap<usize, usize> = HashMap::new();
+
+    // moving every station into its proper function template
+    for (i, function_id) in visited_stations {
+        index_mappings.insert(i, functions[function_id].stations.len());
+        functions[function_id].stations.push(stations[i].clone());
+    }
+
+    for f in functions.iter_mut() {
+        debug!(4, "function '{}':", f.name);
+        for (i, s) in f.stations.iter_mut().enumerate() {
+            debug!(4, " - {i} {} @ {}", s.s_type, s.loc);
+            for (dest, priority) in s.out_bays.iter_mut() {
+                // updating connection indices
+                if let Some(new_i) = index_mappings.get(dest) {
+                    *dest = *new_i;
+                }
+                debug!(5, "    -> {dest} ({priority})");
             }
         }
     }
@@ -50,20 +117,7 @@ pub fn parse(char_map: &Vec<Vec<char>>, stations: &mut Vec<Station>) -> Result<(
     return Ok(());
 }
 
-/// Returns the station located at the specified position, if there is one
-pub fn get_station_at(stations: &Vec<Station>, pos: SourcePos) -> Option<usize> {
-    for i in 0..stations.len() {
-        if stations[i].loc.pos.line == pos.line
-            && stations[i].loc.pos.col <= pos.col
-            && stations[i].loc.pos.col + stations[i].loc.len > pos.col
-        {
-            return Some(i);
-        }
-    }
-    return None;
-}
-
-/// Gets the neighboring location of a specific station in order of highest priority
+/// Gets the neighboring locations of a specific station in order of highest priority
 pub fn get_neighbors(map: &Vec<Vec<char>>, station: &Station) -> Vec<(SourcePos, Direction)> {
     let mut neighbors: Vec<(SourcePos, Direction)> = Vec::new();
 

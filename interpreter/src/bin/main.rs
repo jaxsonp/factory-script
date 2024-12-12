@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::{cmp::min, fs::File, io::prelude::*, process::ExitCode};
+use std::{fs::File, io::prelude::*, process::ExitCode};
 
 use interpreter::*;
 
@@ -8,7 +8,7 @@ fn main() -> ExitCode {
 
     // setting global options
     unsafe {
-        DEBUG_LEVEL = min(cli.debug_level, 4);
+        DEBUG_LEVEL = cli.debug_level;
         COLOR_OUTPUT = !cli.no_color;
         debug!(1, "Debug level:\t{}", DEBUG_LEVEL);
     }
@@ -21,7 +21,6 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    debug!(1, "Input file:\t{}", file_name);
     let mut file = match File::open(&file_name) {
         Ok(f) => f,
         Err(e) => {
@@ -39,6 +38,16 @@ fn main() -> ExitCode {
         }
     };
     debug!(2, "Read {} bytes", bytes_read);
+    debug!(
+        1,
+        "Input file:\t{} ({})",
+        file_name,
+        if bytes_read < 1000 {
+            format!("{}b", bytes_read)
+        } else {
+            format!("{}kb", (bytes_read as u32) as f32 / 1000f32)
+        }
+    );
     debug!(
         4,
         "Contents --------------\n{}\n-----------------------", file_contents

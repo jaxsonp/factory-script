@@ -7,7 +7,7 @@ use crate::{util::*, Pallet, *};
 use types::{StationType, STATION_TYPES};
 
 /// Instance of a station
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Station {
     /// Location of the station in source code
     pub loc: SourceSpan,
@@ -17,12 +17,31 @@ pub struct Station {
     pub data: StationData,
     /// Modifiers
     pub modifiers: StationModifiers,
-    /// Queues for each input bay
-    pub in_bays: Vec<Option<Pallet>>,
-    /// Map of each output bay connection in the form (station_index, in_bay_index)
-    pub out_bays: Vec<(usize, usize)>,
+    /// Array of inputs with their bay priorities (Pallet, priority)
+    pub in_bays: Vec<(Pallet, u32)>,
+    /// Map of each output bay connection in the form (station_index, in_bay_priority)
+    pub out_bays: Vec<(usize, u32)>,
 }
 impl Station {
+    pub fn new(loc: SourceSpan, s_type: &'static StationType) -> Self {
+        Station {
+            loc,
+            s_type,
+            data: StationData::None,
+            modifiers: StationModifiers::default(),
+            in_bays: Vec::new(),
+            out_bays: Vec::new(),
+        }
+    }
+
+    pub fn with_data(self, data: StationData) -> Self {
+        Station { data, ..self }
+    }
+
+    pub fn with_modifiers(self, modifiers: StationModifiers) -> Self {
+        Station { modifiers, ..self }
+    }
+
     pub fn from_str(identifier: &str, loc: SourceSpan) -> Result<Self, Error> {
         for station_type in STATION_TYPES.iter() {
             if station_type.has_id(identifier) {
@@ -43,16 +62,34 @@ impl Station {
         ));
     }
 
-    pub fn clear_in_bays(&mut self) {
-        for bay in self.in_bays.iter_mut() {
-            if bay.is_some() {
-                *bay = None;
-            }
+    /// Checks whether this station is ready to be triggered (if the length of inputs is >= the number of inputs needed)
+    pub fn ready(&self, program: &FSProgram) -> bool {
+        let len = self.in_bays.len();
+        if self.s_type == &types::FUNC_INVOKE {
+            // if its a function invocation, check the number of args the function needs
+            let function_id = if let StationData::FunctionID(id) = self.data {
+                id
+            } else {
+                panic!();
+            };
+            return len >= program.function_templates[function_id].n_args;
+        } else if self.s_type == &types::MAIN || self.s_type == &types::FUNC_INPUT {
+            // these stations can't trigger
+            return false;
         }
+        return len >= self.s_type.inputs;
+    }
+
+    /// collects all the input pallets into a vector and clears the input bays
+    pub fn get_input_pallets(&mut self) -> Vec<Pallet> {
+        self.in_bays.sort_by_key(|k| k.1);
+        let pallets = self.in_bays.iter().map(|x| x.0.clone()).collect();
+        self.in_bays.clear();
+        return pallets;
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StationData {
     AssignValue(Pallet),
     FunctionID(usize),

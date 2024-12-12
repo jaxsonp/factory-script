@@ -35,7 +35,6 @@ pub fn parse(
     }
 
     // Performing DFS starting at every entry station
-    debug!(2, "Parsing connections");
     for (entry_index, cur_function_id) in entry_stations {
         let mut to_visit: Vec<usize> = Vec::new();
         to_visit.push(entry_index);
@@ -100,16 +99,15 @@ pub fn parse(
         functions[function_id].stations.push(stations[i].clone());
     }
 
-    for f in functions.iter_mut() {
-        debug!(4, "function '{}':", f.name);
-        for (i, s) in f.stations.iter_mut().enumerate() {
-            debug!(4, " - {i} {} @ {}", s.s_type, s.loc);
+    for (i, f) in functions.iter_mut().enumerate() {
+        debug!(4, "function {i} '{}':", f.name);
+        for s in f.stations.iter_mut() {
+            debug!(4, " - {s}");
             for (dest, priority) in s.out_bays.iter_mut() {
                 // updating connection indices
                 if let Some(new_i) = index_mappings.get(dest) {
                     *dest = *new_i;
                 }
-                debug!(5, "    -> {dest} ({priority})");
             }
         }
     }

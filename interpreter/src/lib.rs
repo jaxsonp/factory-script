@@ -23,13 +23,11 @@ pub static mut DEBUG_LEVEL: u8 = 0;
 pub fn run(src: &str, print_benchmark: bool) -> Result<(), Error> {
     let start_time = Instant::now();
 
-    debug!(2, "Preprocessing...");
     let mut program = preprocessor::process(src)?;
 
     program.benchmark = print_benchmark;
 
     let runtime_start_time = Instant::now();
-    debug!(2, "Starting");
     let (res, step_count) = runtime::execute(&program);
     if res.is_err() {
         return res;

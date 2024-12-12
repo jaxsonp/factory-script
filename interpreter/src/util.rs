@@ -101,6 +101,7 @@ macro_rules! debug {
 		unsafe {
 			use crate::{COLOR_OUTPUT, DEBUG_LEVEL};
 			if $level <= DEBUG_LEVEL {
+                print!("{: <1$}", "", ($level-1) * 2);
 				if $level > 1 && COLOR_OUTPUT {
 					print!("\x1b[90m");
 					print!($msg, $($args),*);
@@ -115,6 +116,7 @@ macro_rules! debug {
 		unsafe {
 			use crate::{COLOR_OUTPUT, DEBUG_LEVEL};
 			if $level <= DEBUG_LEVEL {
+                print!("{: <1$}", "", ($level-1) * 2);
 				if $level > 1 && COLOR_OUTPUT {
 					print!("\x1b[90m");
 					print!($msg);

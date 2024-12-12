@@ -1,6 +1,8 @@
 pub mod modifiers;
 pub mod types;
 
+use std::fmt::Display;
+
 pub use modifiers::StationModifiers;
 
 use crate::{util::*, Pallet, *};
@@ -86,6 +88,23 @@ impl Station {
         let pallets = self.in_bays.iter().map(|x| x.0.clone()).collect();
         self.in_bays.clear();
         return pallets;
+    }
+}
+impl Display for Station {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} @ {}  {}",
+            self.s_type,
+            self.loc,
+            match &self.data {
+                StationData::AssignValue(val) => format!("({val})"),
+                StationData::FunctionID(id) => format!("(function {id})"),
+                StationData::FunctionIDAndIndex(id, arg_i) =>
+                    format!("(function {id}, arg {arg_i})"),
+                StationData::None => String::new(),
+            }
+        )
     }
 }
 

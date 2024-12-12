@@ -39,33 +39,7 @@ pub fn parse_stations(
     functions.push(FunctionTemplate::new("main".to_string()));
 
     let mut push_station = |s: Station| {
-        debug!(
-            4,
-            "   - {} @ {} {}",
-            s.s_type,
-            s.loc,
-            if s.s_type == &types::ASSIGN {
-                if let StationData::AssignValue(val) = &s.data {
-                    format!("({})", val)
-                } else {
-                    panic!();
-                }
-            } else if s.s_type == &types::FUNC_INVOKE || s.s_type == &types::FUNC_OUTPUT {
-                if let StationData::FunctionID(id) = &s.data {
-                    format!("(function {})", id)
-                } else {
-                    panic!();
-                }
-            } else if s.s_type == &types::FUNC_INPUT {
-                if let StationData::FunctionIDAndIndex(id, index) = &s.data {
-                    format!("(function {}, arg #{})", id, index)
-                } else {
-                    panic!();
-                }
-            } else {
-                "".to_string()
-            }
-        );
+        debug!(4, " - {s}");
         stations.push(s);
     };
 
@@ -92,7 +66,7 @@ pub fn parse_stations(
     let mut cur_token = String::new();
     let mut cur_station_pos = SourcePos::zero();
 
-    debug!(4, "  Stations:");
+    debug!(4, "Stations:");
     loop {
         // incrementing the state machine
         match state {
@@ -296,10 +270,6 @@ pub fn parse_stations(
                 break;
             }
         };
-    }
-    debug!(4, "  Functions:");
-    for (i, f) in functions.iter().enumerate() {
-        debug!(4, "   - {i} {}", f.name);
     }
     match state {
         State::Default => {

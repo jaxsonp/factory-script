@@ -1,6 +1,5 @@
 # TODO
 
-- Standardize debug levels <<<<<
 - QOL
   - Add shorthand IDs for and and or
   - Crossing conveyor belts
@@ -9,8 +8,11 @@
   - Add preprocessor check for invalid modifiers
   - man and max consts for number pallets
 - Under the hood QOL
-  - refactor static mut program options
+  - refactor program options
+    - print all
+    - transition from static mut vars
   - make assign station not a special case (might not be possible)
+  - Maybe convert station parser from FSM to recursive descent parser?
 - Global constants (for long strings etc)
 - Program arguments and return value
 - Functions
@@ -19,5 +21,5 @@
   - File io
   - to_string
   - iterators
-- Maybe convert station parser from FSM to recursive descent parser?
+- stacked pallets?
 - FS Editor

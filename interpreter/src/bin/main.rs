@@ -3,6 +3,25 @@ use std::{fs::File, io::prelude::*, process::ExitCode};
 
 use interpreter::*;
 
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    /// FactoryScript program to execute
+    file: Option<String>,
+
+    /// Print benchmarking information after completion
+    #[arg(short, long)]
+    benchmark: bool,
+
+    /// Increase debug logging level, can be supplied multiple times
+    #[arg(short = 'd', long = "debug", action = clap::ArgAction::Count)]
+    debug_level: u8,
+
+    /// Disable colored terminal output
+    #[arg(long = "no-color")]
+    no_color: bool,
+}
+
 fn main() -> ExitCode {
     let cli = Cli::parse();
 
@@ -43,14 +62,10 @@ fn main() -> ExitCode {
         "Input file:\t{} ({})",
         file_name,
         if bytes_read < 1000 {
-            format!("{}b", bytes_read)
+            format!("{} B", bytes_read)
         } else {
-            format!("{}kb", (bytes_read as u32) as f32 / 1000f32)
+            format!("{:.2} KB", (bytes_read as u32) as f32 / 1000f32)
         }
-    );
-    debug!(
-        4,
-        "Contents --------------\n{}\n-----------------------", file_contents
     );
 
     match run(&file_contents, cli.benchmark) {
@@ -60,24 +75,4 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
-}
-
-// CLI argument parsing struct
-#[derive(Parser)]
-#[command(version)]
-struct Cli {
-    /// Conveyor program to execute
-    file: Option<String>,
-
-    /// Print benchmarking information after completion
-    #[arg(short, long)]
-    benchmark: bool,
-
-    /// Increase debug logging level, can be supplied multiple times
-    #[arg(short = 'd', long = "verbose", action = clap::ArgAction::Count)]
-    debug_level: u8,
-
-    /// Disable colored terminal output
-    #[arg(long = "no-color")]
-    no_color: bool,
 }

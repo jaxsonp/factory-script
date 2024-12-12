@@ -3,6 +3,7 @@ use crate::{debug, function::*, *};
 /// Spawns pallets from the start station and starts the execution loop, returns
 /// the number of steps in the program
 pub fn execute<'a>(program: &'a FSProgram) -> (Result<(), Error>, u64) {
+    debug!(2, "Starting execution");
     let mut step_count: u64 = 0;
 
     // main function, "root" of the call tree
@@ -11,9 +12,7 @@ pub fn execute<'a>(program: &'a FSProgram) -> (Result<(), Error>, u64) {
     // execution loop
     'execute_loop: while !main.is_done() {
         match main.step() {
-            Ok(false) => {
-                debug!(4, "Step {step_count} completed");
-            }
+            Ok(false) => {}
             Ok(true) => {
                 break 'execute_loop;
             }

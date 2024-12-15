@@ -1,22 +1,25 @@
-use std::collections::HashMap;
+use std::{cmp, collections::HashSet};
 
-pub mod conveyor_belt_parser;
+pub mod connection_parser;
 pub mod station_parser;
 
-use crate::*;
-use fs_core::Pallet;
+use station::StationData;
 
-#[cfg(test)]
-mod tests;
+use crate::{station::Station, util::*, *};
 
-/// Preprocesses a source string, validating the syntax and grammar
-///
-/// Returns a tuple containing a vector of stations and the assignment table, which
-/// store the index of every assign station and its corresponding assign value
-pub fn process<'a>(
-    src: &str,
-    ns: &Namespace,
-) -> Result<(Vec<Station>, usize, HashMap<usize, Pallet>), Error> {
+pub const BELT_CHARS: &str = "─│┌┐└┘═║╔╗╚╝";
+#[allow(dead_code)]
+pub const SINGLE_BELT_CHARS: &str = "─│┌┐└┘";
+pub const DOUBLE_BELT_CHARS: &str = "═║╔╗╚╝";
+pub const NORTH_BELT_CHARS: &str = "│└┘║╚╝";
+pub const EAST_BELT_CHARS: &str = "─┌└═╔╚";
+pub const SOUTH_BELT_CHARS: &str = "│┌┐║╔╗";
+pub const WEST_BELT_CHARS: &str = "─┐┘═╗╝";
+
+/// Preprocesses a source string, validating/parsing the syntax and grammar
+pub fn process<'a>(src: &str) -> Result<FSProgram, Error> {
+    debug!(2, "Starting preprocessing");
+
     // generating 2d vector layout of source code
     let mut char_map: Vec<Vec<char>> = Vec::new();
     let mut n_chars = 0;
@@ -29,39 +32,44 @@ pub fn process<'a>(
         return Err(Error::new(SyntaxError, SourcePos::zero(), "Empty file"));
     }
 
-    // station discovery
-    debug!(3, "Discovering stations");
-    let (mut stations, assign_table) = station_parser::parse_stations(&char_map, ns)?;
+    // finding all stations
+    debug!(2, "Parsing stations");
+    let (stations, mut functions) = station_parser::parse_stations(&char_map)?;
     debug!(3, "Found {} stations", stations.len());
 
-    // getting start station's index
-    let mut start_i: usize = 0;
-    let mut found_start = false;
-    for i in 0..stations.len() {
-        if stations[i].logic.id == "start" {
-            if found_start {
-                return Err(Error::new(
-                    SyntaxError,
-                    stations[i].loc,
-                    "Found multiple start stations",
-                ));
-            }
-            start_i = i;
-            found_start = true;
-            break;
-        }
-    }
-    if !found_start {
-        return Err(Error::new(
-            SyntaxError,
-            SourcePos::zero(),
-            "Unable to locate start station",
-        ));
-    }
+    // parsing connections between stations
+    debug!(2, "Parsing connections");
+    connection_parser::parse(&char_map, stations, &mut functions)?;
+    debug!(3, "Found {} functions", functions.len());
 
-    // parsing conveyor belt connections
-    conveyor_belt_parser::parse_conveyor_belts(&char_map, &mut stations)?;
+    // validating functions
+    debug!(2, "Validating functions");
+    for (i, f) in functions.iter_mut().enumerate() {
+        let mut args_seen: HashSet<usize> = HashSet::new();
+        for s in f.stations.iter() {
+            if let StationData::FunctionIDAndIndex(_, arg_i) = s.data {
+                // station is an function input station
+                if args_seen.contains(&arg_i) {
+                    return Err(Error::new(
+                        SyntaxError,
+                        s.loc,
+                        "Duplicate function arguments",
+                    ));
+                }
+
+                // number of args is the highest seen argument number
+                args_seen.insert(arg_i);
+                f.n_args = cmp::max(f.n_args, arg_i + 1);
+            }
+        }
+        debug!(3, "function {i} '{}': {} args", f.name, f.n_args)
+    }
 
     debug!(2, "Finished preprocessing");
-    Ok((stations, start_i, assign_table))
+
+    Ok(FSProgram {
+        main: functions[0].clone(),
+        function_templates: functions,
+        benchmark: false,
+    })
 }

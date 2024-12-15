@@ -1,13 +1,13 @@
 use super::*;
 
-pub static START: StationType = StationType {
-    id: "start",
+pub static MAIN: StationType = StationType {
+    id: "main",
     alt_id: None,
     inputs: 0,
     output: true,
-    procedure: start_procedure,
+    procedure: main_procedure,
 };
-fn start_procedure(_: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn main_procedure(_: Vec<Pallet>) -> Result<Option<Pallet>, String> {
     return Ok(Some(Pallet::Empty));
 }
 
@@ -24,8 +24,12 @@ pub static JOINT: StationType = StationType {
     alt_id: Some(""),
     inputs: 1,
     output: true,
-    procedure: none_procedure,
+    procedure: joint_procedure,
 };
+fn joint_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
+    return Ok(Some(pallets[0].clone()));
+}
 
 pub static ASSIGN: StationType = StationType {
     id: "assign",
@@ -42,14 +46,16 @@ pub static GATE: StationType = StationType {
     output: true,
     procedure: gate_procedure,
 };
-fn gate_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn gate_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 2, "Invalid argument count");
     match (&pallets[0], &pallets[1]) {
-        (Some(Pallet::Bool(b)), Some(pallet)) => Ok(if *b { Some(pallet.clone()) } else { None }),
-        (Some(pallet), Some(Pallet::Bool(b))) => Ok(if *b { Some(pallet.clone()) } else { None }),
+        (Pallet::Bool(b), pallet) | (pallet, Pallet::Bool(b)) => {
+            Ok(if *b { Some((*pallet).clone()) } else { None })
+        }
         _ => {
             return Err(format!(
                 "Expected at least one boolean pallet, received {}\n",
-                list_pallets(pallets)
+                list_pallets(&pallets)
             ));
         }
     }
@@ -62,15 +68,10 @@ pub static FILTER: StationType = StationType {
     output: true,
     procedure: filter_procedure,
 };
-fn filter_procedure(pallets: &Vec<Option<Pallet>>) -> Result<Option<Pallet>, String> {
+fn filter_procedure(pallets: Vec<Pallet>) -> Result<Option<Pallet>, String> {
+    debug_assert!(pallets.len() >= 1, "Invalid argument count");
     match &pallets[0] {
-        Some(Pallet::Bool(false)) => Ok(None),
-        Some(p) => Ok(Some(p.clone())),
-        _ => {
-            return Err(format!(
-                "Expected pallet, received {}\n",
-                list_pallets(pallets)
-            ));
-        }
+        Pallet::Bool(false) => Ok(None),
+        p => Ok(Some((*p).clone())),
     }
 }

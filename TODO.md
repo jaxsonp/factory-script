@@ -8,11 +8,18 @@
   - scientific notation float literals
   - Add preprocessor check for correct outputs
   - Add preprocessor check for invalid modifiers
-  - Fix joint station implementation (make it not a special case)
   - man and max consts for number pallets
+- Under the hood QOL
+  - refactor program options
+    - print all
+    - transition from static mut vars
+  - make assign station not a special case (might not be possible)
+  - Maybe convert station parser from FSM to recursive descent parser?
 - Global constants (for long strings etc)
+- Program arguments and return value
 - Standard lib
   - File io
   - to_string
   - iterators
+- stacked pallets?
 - FS Editor

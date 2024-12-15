@@ -43,13 +43,13 @@ $
 FactoryScript is unopinionated about layout, it is possible to reverse the order...
 
 ```text
-[println]─═{"hello world"}─═[start]
+[println]─═{"hello world"}─═[main]
 ```
 
 ... or even make the conveyor belts as unnecessarily convoluted as you want (this does not affect runtime performance).
 
 ```text
-[start]═─{"hello world"} [println]
+[main]═─{"hello world"} [println]
 ┌────────╝               └───────────────────────────────────┐
 │  ┌┐  ┌┐       ┌┐ ┌┐          ┌┐  ┌┐              ┌┐    ┌┐  │
 │  ││  ││ ┌───┐ ││ ││          ││  ││        ┌┐    ││    ││  │
@@ -65,7 +65,7 @@ FactoryScript is unopinionated about layout, it is possible to reverse the order
 Requires Git and Cargo. First clone and cd into the repository:
 
 ```sh
-git clone https://github.com/jaxsonp/factory-script.git && cd FactoryScript/
+git clone https://github.com/jaxsonp/factory-script.git && cd factory-script/
 ```
 
 ### To build interpreter:

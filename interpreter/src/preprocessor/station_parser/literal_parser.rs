@@ -1,7 +1,6 @@
 use crate::*;
-use core::*;
 
-pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error> {
+pub fn parse_assign_literal(s: &String) -> Result<Pallet, String> {
     match s.as_str() {
         "" => {
             // empty pallet
@@ -15,26 +14,26 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
             // boolean false
             return Ok(Pallet::Bool(false));
         }
-        "pi" => return Ok(constants::PI.clone()),
-        "e" => return Ok(constants::E.clone()),
+        "pi" => return Ok(pallet::constants::PI.clone()),
+        "e" => return Ok(pallet::constants::E.clone()),
         _ => {}
     }
 
     if s.starts_with('"') {
         // string literal
         if !s.ends_with('"') {
-            return Err(Error::new(SyntaxError, loc, "Unclosed string literal"));
+            return Err("Unclosed string literal".to_string());
         }
         let string = &s[1..(s.len() - 1)];
         return Ok(Pallet::String(string.to_owned()));
     } else if s.starts_with('\'') {
         // char literal
         if !s.ends_with('\'') {
-            return Err(Error::new(SyntaxError, loc, "Unclosed character literal"));
+            return Err("Unclosed character literal".to_string());
         }
         let chars: Vec<char> = s.chars().collect();
         if chars.len() != 3 {
-            return Err(Error::new(SyntaxError, loc, "Malformed character literal"));
+            return Err("Malformed character literal".to_string());
         }
         return Ok(Pallet::Char(chars[1]));
     }
@@ -45,11 +44,7 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
     for c in s.chars().collect::<Vec<char>>() {
         if float_terminal {
             // f character already found
-            return Err(Error::new(
-                SyntaxError,
-                loc,
-                "Unexpected character(s) after float literal",
-            ));
+            return Err("Unexpected character(s) after float literal".to_string());
         }
         match c {
             '_' => {
@@ -59,11 +54,9 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
             '.' => {
                 // checking for double decimal points
                 if decimal {
-                    return Err(Error::new(
-                        SyntaxError,
-                        loc,
-                        "Malformed float literal, found multiple decimal points",
-                    ));
+                    return Err(
+                        "Malformed float literal, found multiple decimal points".to_string()
+                    );
                 }
                 decimal = true;
                 parsed_string.push('.');
@@ -73,7 +66,7 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
             }
             c if c.is_ascii_digit() => parsed_string.push(c),
             _ => {
-                return Err(Error::new(SyntaxError, loc, "Invalid assignment literal"));
+                return Err("Invalid assignment literal".to_string());
             }
         }
     }
@@ -83,11 +76,7 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
         match i64::from_str_radix(parsed_string.as_str(), 10) {
             Ok(num) => return Ok(Pallet::Int(num)),
             Err(e) => {
-                return Err(Error::new(
-                    SyntaxError,
-                    loc,
-                    format!("Failed to parse integer literal ({e})"),
-                ));
+                return Err(format!("Failed to parse integer literal ({e})"));
             }
         };
     } else {
@@ -95,11 +84,7 @@ pub fn parse_assign_literal(s: &String, loc: SourceSpan) -> Result<Pallet, Error
         match parsed_string.parse::<f64>() {
             Ok(num) => return Ok(Pallet::Float(num)),
             Err(e) => {
-                return Err(Error::new(
-                    SyntaxError,
-                    loc,
-                    format!("Failed to parse float literal ({e})"),
-                ));
+                return Err(format!("Failed to parse float literal ({e})"));
             }
         };
     }

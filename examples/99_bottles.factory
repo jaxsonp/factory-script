@@ -1,0 +1,27 @@
+
+
+
+[main]
+  ║
+  │
+ {10}═─[]═─[$print_stanza]═┐
+              └═[gate]───═[]
+                  └═[!]   ║║
+                     └═[=]┘│
+                        └═{0}      
+
+
+
+
+{" bottles of beer on the wall, "}═─[print]
+  │
+  │    {" bottles of beer.\nTake one down, pass it around, "}═─[print]
+  │         │
+  │         │    {" bottles of beer on the wall.\n\n"}═─[print]
+  │         │         │
+  ║         ║         ║
+┌─[]═─[]═───[]═─[--]═─[]═─[]═─[$print_stanza.out]
+│ ╚─[print] ╚─[print] ╚─[print]
+║
+[$print_stanza.0]
+

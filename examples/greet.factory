@@ -1,4 +1,4 @@
-[start]═─{"What is your name? "}═─┐
+ [main]═─{"What is your name? "}═─┐
              ╚─[print]    ╚─┐     │
                        {"Hello "} │
                           ┌─╝     │

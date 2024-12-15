@@ -34,7 +34,7 @@ Text that is not a station or a conveyor belt is treated as a comment, being ign
 spawns an empty   assigns it the string
 pallet            literal "hello world"
   v                v
-[start]═─{"hello world"}═─[println]
+[main]═─{"hello world"}═─[println]
                             ^
                         prints the pallets value
 ```
@@ -48,13 +48,13 @@ $
 However, because FactoryScript is unopinionated about layout, it is possible to reverse the order...
 
 ```text
-[println]─═{"hello world"}─═[start]
+[println]─═{"hello world"}─═[main]
 ```
 
 ... or even make the conveyor belts as unnecessarily convoluted as you want (this does not affect runtime performance).
 
 ```text
-[start]═─{"hello world"} [println]
+[main]═─{"hello world"} [println]
 ┌────────╝               └───────────────────────────────────┐
 │  ┌┐  ┌┐       ┌┐ ┌┐          ┌┐  ┌┐              ┌┐    ┌┐  │
 │  ││  ││ ┌───┐ ││ ││          ││  ││        ┌┐    ││    ││  │
@@ -70,7 +70,7 @@ However, because FactoryScript is unopinionated about layout, it is possible to 
 Requires Git and Cargo. First clone and cd into the repository:
 
 ```sh
-git clone https://github.com/jaxsonp/FactoryScript.git && cd FactoryScript/
+git clone https://github.com/jaxsonp/FactoryScript.git && cd factory-script/`
 ```
 
 ### To build interpreter:

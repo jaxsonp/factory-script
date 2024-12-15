@@ -19,8 +19,8 @@ pub struct Station {
     pub data: StationData,
     /// Modifiers
     pub modifiers: StationModifiers,
-    /// Array of inputs with their bay priorities (Pallet, priority)
-    pub in_bays: Vec<(Pallet, u32)>,
+    /// In bay list, in the form (priority, pallet)
+    pub in_bays: Vec<(u32, Pallet)>,
     /// Map of each output bay connection in the form (station_index, in_bay_priority)
     pub out_bays: Vec<(usize, u32)>,
 }
@@ -84,10 +84,27 @@ impl Station {
 
     /// collects all the input pallets into a vector and clears the input bays
     pub fn get_input_pallets(&mut self) -> Vec<Pallet> {
-        self.in_bays.sort_by_key(|k| k.1);
-        let pallets = self.in_bays.iter().map(|x| x.0.clone()).collect();
+        self.in_bays.sort_by_key(|p| p.0);
+
+        let mut pallets: Vec<Pallet> = Vec::with_capacity(self.in_bays.len());
+        for (_, pallet) in self.in_bays.iter() {
+            pallets.push(pallet.clone());
+        }
+
         self.in_bays.clear();
         return pallets;
+    }
+
+    /// send a pallet to this stations bay
+    pub fn send_pallet(&mut self, pallet: Pallet, priority: u32) {
+        // checking for duplicates
+        for item in self.in_bays.iter_mut() {
+            if item.0 == priority {
+                item.1 = pallet;
+                return;
+            }
+        }
+        self.in_bays.push((priority, pallet));
     }
 }
 impl Display for Station {

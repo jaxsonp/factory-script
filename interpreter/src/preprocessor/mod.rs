@@ -8,6 +8,7 @@ use station::StationData;
 use crate::{station::Station, util::*, *};
 
 pub const BELT_CHARS: &str = "─│┌┐└┘═║╔╗╚╝";
+#[allow(dead_code)]
 pub const SINGLE_BELT_CHARS: &str = "─│┌┐└┘";
 pub const DOUBLE_BELT_CHARS: &str = "═║╔╗╚╝";
 pub const NORTH_BELT_CHARS: &str = "│└┘║╚╝";

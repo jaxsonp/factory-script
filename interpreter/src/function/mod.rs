@@ -41,9 +41,7 @@ impl<'a> Function<'a> {
     pub fn step(&mut self) -> Result<bool, Error> {
         // moving the pallets
         for (pallet, (dest_i, priority)) in self.moving_pallets.iter() {
-            self.stations[*dest_i]
-                .in_bays
-                .push((pallet.clone(), *priority));
+            self.stations[*dest_i].send_pallet(pallet.clone(), *priority);
         }
         self.moving_pallets.clear();
 
@@ -119,19 +117,17 @@ impl<'a> Function<'a> {
             if child.step()? {
                 return Ok(true);
             }
+            // spawning children's output
+            if let Some(output) = child.output.clone() {
+                for dest in self.stations[child.parent_station].out_bays.iter() {
+                    self.moving_pallets.push((output.clone(), *dest));
+                }
+            }
         }
 
         // checking if children are done executing
         self.children.retain(|child| {
-            if child.is_done() {
-                if let Some(output) = child.output.clone() {
-                    for dest in self.stations[child.parent_station].out_bays.iter() {
-                        self.moving_pallets.push((output.clone(), *dest));
-                    }
-                }
-                return false;
-            }
-            return true;
+            return !child.is_done();
         });
 
         return Ok(false);
@@ -172,8 +168,7 @@ impl<'a> Function<'a> {
 
     /// Returns whether or not this function is done executing
     pub fn is_done(&self) -> bool {
-        return (self.moving_pallets.is_empty() && self.children.is_empty())
-            || self.output.is_some();
+        return self.moving_pallets.is_empty() && self.children.is_empty();
     }
 
     /// Instantiates the main function, used for program initialization

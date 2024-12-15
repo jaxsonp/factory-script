@@ -52,7 +52,10 @@ pub fn follow_belt(
             match get_station_at(pos) {
                 Some(dest) => {
                     // finding input priority of destination in bay
-                    for (i, neighbor) in get_neighbors(map, &stations[dest]).iter().enumerate() {
+                    for (i, neighbor) in get_neighbors_inorder(map, &stations[dest])
+                        .iter()
+                        .enumerate()
+                    {
                         if neighbor.0 == last_pos {
                             return Ok(Some((dest, i as u32)));
                         }
@@ -140,7 +143,10 @@ pub fn follow_belt(
 }
 
 /// Gets the neighboring locations of a specific station in order of highest priority
-pub fn get_neighbors(map: &Vec<Vec<char>>, station: &Station) -> Vec<(SourcePos, Direction)> {
+pub fn get_neighbors_inorder(
+    map: &Vec<Vec<char>>,
+    station: &Station,
+) -> Vec<(SourcePos, Direction)> {
     let mut neighbors: Vec<(SourcePos, Direction)> = Vec::new();
 
     let mut northern_neighbors: Vec<(SourcePos, Direction)> = Vec::new();

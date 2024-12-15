@@ -59,7 +59,6 @@ pub fn parse(
             // marking this station as being visited by this function
             visited_stations.insert(i, cur_function_id);
 
-            //println!(" at {i}");
             let neighbors = get_neighbors(char_map, &stations[i]);
             for neighbor in neighbors {
                 let (dest, priority) = match follow_belt(char_map, &stations, neighbor)? {
@@ -103,7 +102,7 @@ pub fn parse(
         debug!(4, "function {i} '{}':", f.name);
         for s in f.stations.iter_mut() {
             debug!(4, " - {s}");
-            for (dest, priority) in s.out_bays.iter_mut() {
+            for (dest, _) in s.out_bays.iter_mut() {
                 // updating connection indices
                 if let Some(new_i) = index_mappings.get(dest) {
                     *dest = *new_i;
@@ -115,103 +114,46 @@ pub fn parse(
     return Ok(());
 }
 
-/// Gets the neighboring locations of a specific station in order of highest priority
+/// Gets the neighboring locations (in no particular order)
 pub fn get_neighbors(map: &Vec<Vec<char>>, station: &Station) -> Vec<(SourcePos, Direction)> {
     let mut neighbors: Vec<(SourcePos, Direction)> = Vec::new();
 
-    let mut northern_neighbors: Vec<(SourcePos, Direction)> = Vec::new();
+    // northern neighbors
     if station.loc.pos.line > 0 {
         for i in 0..station.loc.len {
             if station.loc.pos.col + i < map[station.loc.pos.line - 1].len() {
-                northern_neighbors.push((
+                neighbors.push((
                     SourcePos::new(station.loc.pos.line - 1, station.loc.pos.col + i),
                     Direction::NORTH,
                 ));
             }
         }
     }
-    let mut eastern_neighbors: Vec<(SourcePos, Direction)> = Vec::new();
+    // eastern
     if station.loc.pos.col + station.loc.len < map[station.loc.pos.line].len() {
-        eastern_neighbors.push((
+        neighbors.push((
             SourcePos::new(station.loc.pos.line, station.loc.pos.col + station.loc.len),
             Direction::EAST,
         ));
     }
-    let mut southern_neighbors: Vec<(SourcePos, Direction)> = Vec::new();
+    // southern
     if station.loc.pos.line < (map.len() - 1) {
         for i in (0..station.loc.len).rev() {
             if station.loc.pos.col + i < map[station.loc.pos.line + 1].len() {
-                southern_neighbors.push((
+                neighbors.push((
                     SourcePos::new(station.loc.pos.line + 1, station.loc.pos.col + i),
                     Direction::SOUTH,
                 ));
             }
         }
     }
-    let mut western_neighbors: Vec<(SourcePos, Direction)> = Vec::new();
+    // western neighbors
     if station.loc.pos.col > 0 {
-        western_neighbors.push((
+        neighbors.push((
             SourcePos::new(station.loc.pos.line, station.loc.pos.col - 1),
             Direction::WEST,
         ));
     }
 
-    if !station.modifiers.reverse {
-        // clockwise
-        match station.modifiers.priority {
-            Direction::NORTH => {
-                neighbors.extend(northern_neighbors);
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(southern_neighbors);
-                neighbors.extend(western_neighbors);
-            }
-            Direction::EAST => {
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(southern_neighbors);
-                neighbors.extend(western_neighbors);
-                neighbors.extend(northern_neighbors);
-            }
-            Direction::SOUTH => {
-                neighbors.extend(southern_neighbors);
-                neighbors.extend(western_neighbors);
-                neighbors.extend(northern_neighbors);
-                neighbors.extend(eastern_neighbors);
-            }
-            Direction::WEST => {
-                neighbors.extend(western_neighbors);
-                neighbors.extend(northern_neighbors);
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(southern_neighbors);
-            }
-        }
-    } else {
-        // counter clockwise
-        match station.modifiers.priority {
-            Direction::NORTH => {
-                neighbors.extend(northern_neighbors.iter().rev());
-                neighbors.extend(western_neighbors);
-                neighbors.extend(southern_neighbors.iter().rev());
-                neighbors.extend(eastern_neighbors);
-            }
-            Direction::EAST => {
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(northern_neighbors.iter().rev());
-                neighbors.extend(western_neighbors);
-                neighbors.extend(southern_neighbors.iter().rev());
-            }
-            Direction::SOUTH => {
-                neighbors.extend(southern_neighbors.iter().rev());
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(northern_neighbors.iter().rev());
-                neighbors.extend(western_neighbors);
-            }
-            Direction::WEST => {
-                neighbors.extend(western_neighbors);
-                neighbors.extend(southern_neighbors.iter().rev());
-                neighbors.extend(eastern_neighbors);
-                neighbors.extend(northern_neighbors.iter().rev());
-            }
-        }
-    }
     return neighbors;
 }

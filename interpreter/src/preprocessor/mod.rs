@@ -1,7 +1,7 @@
+use std::{cmp, collections::HashSet};
+
 pub mod connection_parser;
 pub mod station_parser;
-
-use std::{cmp, collections::HashSet};
 
 use station::StationData;
 

@@ -1,42 +1,37 @@
 # FactoryScript 🏭
 
-[![Cargo tests](https://github.com/jaxsonp/FactoryScript/actions/workflows/rust.yml/badge.svg)](https://github.com/jaxsonp/FactoryScript/actions/workflows/rust.yml)
+[![Cargo tests](https://github.com/jaxsonp/factory-script/actions/workflows/rust.yml/badge.svg)](https://github.com/jaxsonp/factory-script/actions/workflows/rust.yml)
 [![Documentation Status](https://readthedocs.org/projects/factoryscript/badge/?version=latest)](https://factoryscript.readthedocs.io/en/latest/?badge=latest)
 
-The world's number one M.O.P. (Manufacturing Oriented Programming) language, FactoryScript is a dynamically typed, interpreted programming language inspired by the magnificence of the industrial revolution.
+FactoryScript is an interpreted, graph-based esolang themed around factories, inspired by the modern manufacturing process. In a nutshell, FactoryScript programs (factories) are graphs where the nodes (stations) are connected by Unicode box characters (conveyor belts).
 
 This repository contains:
 
-- `docs/`: Documentation files (Incomplete)
+- `docs/`: Documentation files
 - `examples/`: Directory containing some FactoryScript code examples
-- `interpreter/`: Cargo package containing the canonical FactoryScript Interpreter
-
-### Table of Contents
-
-- [Language Overview](#language-overview)
-  - [Syntax](#syntax)
-  - [Examples](#examples)
-- [Build Instructions](#build-instructions)
+- `interpreter/`: Cargo package containing the canonical FactoryScript interpreter
 
 ## Language Overview
 
-FactoryScript was motivated by the elegance and efficiency of factories and the modern manufacturing process. At it's core, FactoryScript has three primary concepts. Pallets, which contain data, which are moved around by conveyor belts to different stations which perform operations on the pallets. FactoryScript code describes the layout and connections of these elements.
+_For the complete reference, check out the [full documentation](https://factoryscript.readthedocs.io/en/latest/)_
 
-For the complete reference, check out the [full documentation](https://factoryscript.readthedocs.io/en/latest/) (incomplete).
+In its most basic form, a FactoryScript program is simply a graph. Little chunks of data called _pallets_ move around the graph on _conveyor belts_ to and from different nodes, which are called _stations_.
 
-**Stations:** In general, stations are defined with square brackets, and contain a single ASCII, non-whitespace identifier, such as `[println]`, `[>=]`, or `[exit]`. There is one exception to this syntax, assign stations. They are defined with curly brackets, and contain literals to be assigned to pallets. Examples include `{"abc"}`, `{true}`, and `{4.025}`
+**Pallets** hold morsels of data, such as integers, boolean values, strings, and so on.
 
-**Conveyor Belts:** Conveyor belts are represented using contiguous Unicode [box-drawing characters](https://en.wikipedia.org/wiki/Box-drawing_characters). Conveyor belts are omni-directional, but must be attached on both ends to a station. The beginning end of a conveyor belt is drawn with double line characters (`║`, `═`, `╗`, etc) while the rest of the belt is drawn with single line characters (`│`, `─`, `┐`, etc).
+**Conveyor belts** are represented using contiguous Unicode [box-drawing characters](https://en.wikipedia.org/wiki/Box-drawing_characters). The beginning end of a conveyor belt is drawn with double line characters (`║`, `═`, `╗`, etc) while the rest of the belt is drawn with single line characters (`│`, `─`, `┐`, etc).
+
+**Stations** in general are represented using square brackets with non-whitespace identifiers in between, such as `[println]`, `[>=]`, or `[exit]` (Literal assignment is an exception, using curly brackets instead, such as `{3}` or `{false}`). Depending on the type, a station consumes a certain number of input pallets, performs an operation, then optionally produces an output pallet.
 
 Text that is not a station or a conveyor belt is treated as a comment, being ignored by the interpreter. Below is an annotated hello world program.
 
 ```text
-spawns an empty   assigns it the string
-pallet            literal "hello world"
-  v                v
-[start]═─{"hello world"}═─[println]
-                            ^
-                        prints the pallets value
+spawns an empty    assigns it the string
+pallet             literal "hello world"
+  v                 v
+[main]═──{"hello world"}═──[println]
+                              ^
+                          prints the pallets value
 ```
 
 ```sh
@@ -45,7 +40,7 @@ hello world
 $
 ```
 
-However, because FactoryScript is unopinionated about layout, it is possible to reverse the order...
+FactoryScript is unopinionated about layout, it is possible to reverse the order...
 
 ```text
 [println]─═{"hello world"}─═[start]
@@ -70,7 +65,7 @@ However, because FactoryScript is unopinionated about layout, it is possible to 
 Requires Git and Cargo. First clone and cd into the repository:
 
 ```sh
-git clone https://github.com/jaxsonp/FactoryScript.git && cd FactoryScript/
+git clone https://github.com/jaxsonp/factory-script.git && cd FactoryScript/
 ```
 
 ### To build interpreter:

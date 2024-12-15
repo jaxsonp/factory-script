@@ -9,4 +9,4 @@ version = "0.1.0"
 authors = ["Jaxson Pahukula <jaxpahu@gmail.com>"]
 edition = "2021"
 readme = "./README.md"
-repository = "https://github.com/jaxsonp/FactoryScript"
+repository = "https://github.com/jaxsonp/factory-script"

@@ -2,6 +2,7 @@
 
 - Update docs
   - functions
+- Reevaluate modifiers
 - QOL
   - Add shorthand IDs for and and or
   - Crossing conveyor belts

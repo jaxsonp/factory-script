@@ -1,6 +1,6 @@
 # FactoryScript 🏭
 
-[![Cargo tests](https://github.com/jaxsonp/factory-script/actions/workflows/rust.yml/badge.svg)](https://github.com/jaxsonp/factory-script/actions/workflows/rust.yml)
+[![Cargo tests](https://github.com/jaxsonp/factoryscript/actions/workflows/rust.yml/badge.svg)](https://github.com/jaxsonp/factoryscript/actions/workflows/rust.yml)
 [![Documentation Status](https://readthedocs.org/projects/factoryscript/badge/?version=latest)](https://factoryscript.readthedocs.io/en/latest/?badge=latest)
 
 FactoryScript is an interpreted, graph-based esolang themed around factories, inspired by the modern manufacturing process. In a nutshell, FactoryScript programs (factories) are graphs where the nodes (stations) are connected by Unicode box characters (conveyor belts).
@@ -65,7 +65,7 @@ FactoryScript is unopinionated about layout, it is possible to reverse the order
 Requires Git and Cargo. First clone and cd into the repository:
 
 ```sh
-git clone https://github.com/jaxsonp/factory-script.git && cd factory-script/
+git clone https://github.com/jaxsonp/factoryscript.git && cd factoryscript/
 ```
 
 ### To build interpreter:
